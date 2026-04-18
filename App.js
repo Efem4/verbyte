@@ -9,10 +9,11 @@ import CardsScreen    from './src/screens/CardsScreen';
 import QuizScreen     from './src/screens/QuizScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import ExploreScreen  from './src/screens/ExploreScreen';
+import ProgressScreen from './src/screens/ProgressScreen';
 
 const Tab = createBottomTabNavigator();
 
-const ICONS = { Kartlar: '📖', Quiz: '⚡', Pratik: '✏️', 'Keşif': '🧭' };
+const ICONS = { Kartlar: '📖', Quiz: '⚡', Pratik: '✏️', 'Keşif': '🧭', İlerleme: '📊' };
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
           <Tab.Screen name="Quiz"     component={QuizScreen} />
           <Tab.Screen name="Pratik"   component={PracticeScreen} />
           <Tab.Screen name="Keşif"   component={ExploreScreen} />
+          <Tab.Screen name="İlerleme" component={ProgressScreen} />
         </Tab.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
