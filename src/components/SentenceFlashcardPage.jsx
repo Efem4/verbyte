@@ -70,7 +70,9 @@ export default function SentenceFlashcardPage({ langConfig }) {
 
   const [loadedSentLevels, setLoadedSentLevels] = useState(new Set());
   const [sentProgress, setSentProgress] = useState(() => langCode ? loadSentProgress(langCode) : {});
-  const [openLevel, setOpenLevel] = useState(null);
+  const [activeLevel, setActiveLevel] = useState(() => {
+    return LEVELS.find(l => langConfig?.loadedLevels?.has(l)) ?? 'A1';
+  });
   const [selectedCat, setSelectedCat] = useState(null);
   const [queue, setQueue] = useState([]);
   const [sessionKnown, setSessionKnown] = useState(0);
@@ -141,9 +143,8 @@ export default function SentenceFlashcardPage({ langConfig }) {
     else setQueue(next);
   }
 
-  function handleToggleLevel(level) {
-    setOpenLevel(prev => prev === level ? null : level);
-    // Henüz yüklenmemişse yükle
+  function handleSelectLevel(level) {
+    setActiveLevel(level);
     if (!loadedSentLevels.has(level) && loadedLevels.has(level)) {
       loadSentenceLevel(langCode, level).then(() => {
         setLoadedSentLevels(prev => new Set([...prev, level]));
@@ -219,83 +220,89 @@ export default function SentenceFlashcardPage({ langConfig }) {
     );
   }
 
-  // ── Ana ekran: accordion ──
+  // ── Ana ekran: level navigator ──
   return (
     <div className="page fp-browse">
-      {LEVELS.map(level => {
-        const isLevelLoaded = loadedLevels.has(level);
-        if (!isLevelLoaded) return null; // Kilitli level'ları gösterme
+      {/* Level pill navigator */}
+      <div className="fp-level-nav">
+        {LEVELS.map(level => {
+          const isAvail = loadedLevels.has(level);
+          if (!isAvail) return null;
+          const isSentLoaded = loadedSentLevels.has(level);
+          const color = levelColors[level] ?? 'var(--primary)';
+          const isActive = activeLevel === level;
 
-        const sentCats = getSentCatsForLevel(level);
-        const isSentLoaded = loadedSentLevels.has(level);
-        const isOpen = openLevel === level;
-        const color = levelColors[level] ?? '#818CF8';
+          const sentCats = getSentCatsForLevel(level);
+          const totalSents = sentCats.reduce((s, c) => s + (c.sentences?.length ?? 0), 0);
+          const knownSents = sentCats.reduce((s, c) =>
+            s + (c.sentences?.filter(sent => (sentProgress[sent.id]?.reps ?? 0) > 0).length ?? 0), 0
+          );
+          const levelPct = isSentLoaded && totalSents > 0
+            ? Math.round((knownSents / totalSents) * 100)
+            : null;
 
-        // Level progress: kaç kategorinin en az 1 cümlesi bilinmiş
-        const totalSents = sentCats.reduce((s, c) => s + (c.sentences?.length ?? 0), 0);
-        const knownSents = sentCats.reduce((s, c) =>
-          s + (c.sentences?.filter(sent => (sentProgress[sent.id]?.reps ?? 0) > 0).length ?? 0), 0
-        );
-        const levelPct = totalSents > 0 ? Math.round((knownSents / totalSents) * 100) : 0;
+          return (
+            <button
+              key={level}
+              className={`fp-lvl-pill${isActive ? ' active' : ''}`}
+              style={isActive ? { background: color, borderColor: color } : {}}
+              onClick={() => handleSelectLevel(level)}
+            >
+              {level}
+              {levelPct !== null && (
+                <span className="fp-lvl-pct">{levelPct}%</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Seçili level'ın cümle kategorileri */}
+      {(() => {
+        const isSentLoaded = loadedSentLevels.has(activeLevel);
+        const color = levelColors[activeLevel] ?? 'var(--primary)';
+        const sentCats = getSentCatsForLevel(activeLevel);
+
+        if (!isSentLoaded) {
+          return <div className="fp-loading">Yükleniyor…</div>;
+        }
+
+        if (sentCats.length === 0) {
+          return (
+            <div className="fp-loading">Bu seviyede cümle kategorisi yok.</div>
+          );
+        }
 
         return (
-          <div key={level} className={`fp-accordion${isOpen ? ' open' : ''}`}>
-            <button className="fp-acc-header" onClick={() => handleToggleLevel(level)}>
-              <span className="fp-acc-badge" style={{ background: color }}>{level}</span>
-              <div className="fp-acc-bar-wrap">
-                <div className="fp-acc-bar-track">
-                  <div className="fp-acc-bar-fill" style={{ width: `${levelPct}%`, background: color }} />
-                </div>
-              </div>
-              <span className="fp-acc-pct" style={{ color }}>
-                {isSentLoaded ? `${levelPct}%` : '…'}
-              </span>
-              <span className="fp-acc-chevron">{isOpen ? '▲' : '▼'}</span>
-            </button>
-
-            {isOpen && !isSentLoaded && (
-              <div className="fp-acc-body" style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
-                Yükleniyor…
-              </div>
-            )}
-
-            {isOpen && isSentLoaded && (
-              <div className="fp-acc-body">
-                {sentCats.length === 0 && (
-                  <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
-                    Bu seviyede cümle yok.
+          <div className="fp-cat-list">
+            {sentCats.map(cat => {
+              const total = cat.sentences?.length ?? 0;
+              const known = cat.sentences?.filter(s => (sentProgress[s.id]?.reps ?? 0) > 0).length ?? 0;
+              const due = cat.sentences?.filter(s => {
+                const e = sentProgress[s.id];
+                return e && e.due <= Date.now();
+              }).length ?? 0;
+              const pct = total > 0 ? Math.round((known / total) * 100) : 0;
+              return (
+                <button key={cat.id} className="fp-cat-row" onClick={() => startCategory(cat)}>
+                  <span className="fp-cat-emoji">{cat.emoji}</span>
+                  <div className="fp-cat-info">
+                    <div className="fp-cat-top">
+                      <span className="fp-cat-label">{cat.label}</span>
+                      {due > 0 && <span className="fp-cat-due">tekrar</span>}
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{total} cümle</span>
+                    </div>
+                    <div className="fp-cat-bar-track">
+                      <div className="fp-cat-bar-fill" style={{ width: `${pct}%`, background: color }} />
+                    </div>
                   </div>
-                )}
-                {sentCats.map(cat => {
-                  const total = cat.sentences?.length ?? 0;
-                  const known = cat.sentences?.filter(s => (sentProgress[s.id]?.reps ?? 0) > 0).length ?? 0;
-                  const due = cat.sentences?.filter(s => {
-                    const e = sentProgress[s.id];
-                    return e && e.due <= Date.now();
-                  }).length ?? 0;
-                  const pct = total > 0 ? Math.round((known / total) * 100) : 0;
-                  return (
-                    <button key={cat.id} className="fp-cat-row" onClick={() => startCategory(cat)}>
-                      <span className="fp-cat-emoji">{cat.emoji}</span>
-                      <div className="fp-cat-info">
-                        <div className="fp-cat-top">
-                          <span className="fp-cat-label">{cat.label}</span>
-                          {due > 0 && <span className="fp-cat-due">tekrar</span>}
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{total} cümle</span>
-                        </div>
-                        <div className="fp-cat-bar-track">
-                          <div className="fp-cat-bar-fill" style={{ width: `${pct}%`, background: color }} />
-                        </div>
-                      </div>
-                      <span className="fp-cat-pct">{pct}%</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                  <span className="fp-cat-pct">{pct}%</span>
+                </button>
+              );
+            })}
           </div>
         );
-      })}
+      })()}
     </div>
   );
 }
