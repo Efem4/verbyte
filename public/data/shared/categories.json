@@ -1,0 +1,296 @@
+[
+  {
+    "id": "greetings",
+    "label": "Selamlaşma",
+    "emoji": "👋",
+    "color": "#4F46E5",
+    "cefr": "A1"
+  },
+  {
+    "id": "numbers",
+    "label": "Sayılar",
+    "emoji": "🔢",
+    "color": "#059669",
+    "cefr": "A1"
+  },
+  {
+    "id": "colors",
+    "label": "Renkler",
+    "emoji": "🎨",
+    "color": "#DC2626",
+    "cefr": "A1"
+  },
+  {
+    "id": "animals",
+    "label": "Hayvanlar",
+    "emoji": "🐾",
+    "color": "#D97706",
+    "cefr": "A1"
+  },
+  {
+    "id": "food",
+    "label": "Yiyecekler",
+    "emoji": "🍽️",
+    "color": "#7C3AED",
+    "cefr": "A1"
+  },
+  {
+    "id": "family",
+    "label": "Aile",
+    "emoji": "👨‍👩‍👧",
+    "color": "#0891B2",
+    "cefr": "A1"
+  },
+  {
+    "id": "body",
+    "label": "Vücut",
+    "emoji": "🫀",
+    "color": "#E11D48",
+    "cefr": "A1"
+  },
+  {
+    "id": "clothes",
+    "label": "Kıyafetler",
+    "emoji": "👗",
+    "color": "#9333EA",
+    "cefr": "A1"
+  },
+  {
+    "id": "house",
+    "label": "Ev",
+    "emoji": "🏠",
+    "color": "#EA580C",
+    "cefr": "A1"
+  },
+  {
+    "id": "nature",
+    "label": "Doğa",
+    "emoji": "🌿",
+    "color": "#16A34A",
+    "cefr": "A2"
+  },
+  {
+    "id": "time",
+    "label": "Zaman",
+    "emoji": "⏰",
+    "color": "#CA8A04",
+    "cefr": "A1"
+  },
+  {
+    "id": "weather",
+    "label": "Hava Durumu",
+    "emoji": "☁️",
+    "color": "#0284C7",
+    "cefr": "A1"
+  },
+  {
+    "id": "places",
+    "label": "Yerler",
+    "emoji": "📍",
+    "color": "#0D9488",
+    "cefr": "A1"
+  },
+  {
+    "id": "transport",
+    "label": "Ulaşım",
+    "emoji": "🚗",
+    "color": "#6366F1",
+    "cefr": "A1"
+  },
+  {
+    "id": "emotions",
+    "label": "Duygular",
+    "emoji": "❤️",
+    "color": "#F59E0B",
+    "cefr": "A2"
+  },
+  {
+    "id": "school",
+    "label": "Okul",
+    "emoji": "📚",
+    "color": "#8B5CF6",
+    "cefr": "A2"
+  },
+  {
+    "id": "verbs",
+    "label": "Fiiller",
+    "emoji": "⚡",
+    "color": "#2563EB",
+    "cefr": "A1"
+  },
+  {
+    "id": "adjectives",
+    "label": "Sıfatlar",
+    "emoji": "✨",
+    "color": "#DB2777",
+    "cefr": "A1"
+  },
+  {
+    "id": "professions",
+    "label": "Meslekler",
+    "emoji": "💼",
+    "color": "#65A30D",
+    "cefr": "A2"
+  },
+  {
+    "id": "sports",
+    "label": "Spor",
+    "emoji": "⚽",
+    "color": "#10B981",
+    "cefr": "A2"
+  },
+  {
+    "id": "shopping",
+    "label": "Alışveriş",
+    "emoji": "🛍️",
+    "color": "#F97316",
+    "cefr": "A2"
+  },
+  {
+    "id": "health",
+    "label": "Sağlık",
+    "emoji": "💊",
+    "color": "#06B6D4",
+    "cefr": "A2"
+  },
+  {
+    "id": "technology",
+    "label": "Teknoloji",
+    "emoji": "💻",
+    "color": "#3B82F6",
+    "cefr": "B1"
+  },
+  {
+    "id": "hobbies",
+    "label": "Hobiler",
+    "emoji": "🎯",
+    "color": "#A855F7",
+    "cefr": "A2"
+  },
+  {
+    "id": "kitchen",
+    "label": "Mutfak",
+    "emoji": "🍳",
+    "color": "#EF4444",
+    "cefr": "A2"
+  },
+  {
+    "id": "travel",
+    "label": "Seyahat",
+    "emoji": "✈️",
+    "color": "#14B8A6",
+    "cefr": "A2"
+  },
+  {
+    "id": "music",
+    "label": "Müzik",
+    "emoji": "🎵",
+    "color": "#EC4899",
+    "cefr": "A2"
+  },
+  {
+    "id": "relationships",
+    "label": "İlişkiler",
+    "emoji": "🤝",
+    "color": "#84CC16",
+    "cefr": "A2"
+  },
+  {
+    "id": "environment",
+    "label": "Çevre",
+    "emoji": "🌍",
+    "color": "#22C55E",
+    "cefr": "B1"
+  },
+  {
+    "id": "media",
+    "label": "Medya",
+    "emoji": "📱",
+    "color": "#6366F1",
+    "cefr": "B1"
+  },
+  {
+    "id": "business",
+    "label": "İş Hayatı",
+    "emoji": "💼",
+    "color": "#0EA5E9",
+    "cefr": "B2"
+  },
+  {
+    "id": "politics",
+    "label": "Politika & Hukuk",
+    "emoji": "⚖️",
+    "color": "#DC2626",
+    "cefr": "B2"
+  },
+  {
+    "id": "science",
+    "label": "Bilim",
+    "emoji": "🔬",
+    "color": "#7C3AED",
+    "cefr": "B2"
+  },
+  {
+    "id": "arts",
+    "label": "Sanat & Kültür",
+    "emoji": "🎭",
+    "color": "#F59E0B",
+    "cefr": "B2"
+  },
+  {
+    "id": "abstract",
+    "label": "Soyut Kavramlar",
+    "emoji": "💭",
+    "color": "#6366F1",
+    "cefr": "C1"
+  },
+  {
+    "id": "literature",
+    "label": "Edebiyat & Felsefe",
+    "emoji": "📜",
+    "color": "#8B5CF6",
+    "cefr": "C1"
+  },
+  {
+    "id": "advanced_verbs",
+    "label": "İleri Fiiller",
+    "emoji": "⚡",
+    "color": "#10B981",
+    "cefr": "C1"
+  },
+  {
+    "id": "geography",
+    "label": "Coğrafya",
+    "emoji": "🗺️",
+    "color": "#059669",
+    "cefr": "A2"
+  },
+  {
+    "id": "fashion",
+    "label": "Moda",
+    "emoji": "👠",
+    "color": "#EC4899",
+    "cefr": "A2"
+  },
+  {
+    "id": "fitness",
+    "label": "Fitness & Sağlık",
+    "emoji": "💪",
+    "color": "#F97316",
+    "cefr": "B1"
+  },
+  {
+    "id": "cinema",
+    "label": "Sinema & TV",
+    "emoji": "🎬",
+    "color": "#7C3AED",
+    "cefr": "B1"
+  },
+  {
+    "id": "other",
+    "label": "Diğer",
+    "emoji": "📦",
+    "color": "#64748B",
+    "cefr": "B2"
+  }
+]

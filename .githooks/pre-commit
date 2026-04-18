@@ -1,0 +1,15 @@
+#!/bin/sh
+# Her git commit öncesinde otomatik çalışır
+# npm run prepare ile aktif edilir
+
+echo "🧪 Commit öncesi testler çalıştırılıyor..."
+npm run test:app
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Testler başarısız — commit engellendi."
+  echo "   Hataları düzelt ve tekrar dene."
+  exit 1
+fi
+
+echo "✅ Testler geçti — commit devam ediyor."

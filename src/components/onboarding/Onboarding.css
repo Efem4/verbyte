@@ -1,0 +1,298 @@
+.ob-shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.ob-progress {
+  height: 4px;
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
+.ob-progress-fill {
+  height: 100%;
+  background: var(--accent-green);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ob-back {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  margin: var(--s3) var(--s4);
+  flex-shrink: 0;
+  border-radius: var(--r-full);
+  transition: background var(--t-fast);
+}
+
+.ob-back:hover { background: var(--surface); }
+
+.ob-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s6) var(--s5);
+  gap: var(--s8);
+}
+
+.ob-title {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.ob-subtitle {
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 6px;
+}
+
+.ob-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.ob-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s4) var(--s5);
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  color: var(--text);
+  font-size: var(--text-md);
+  font-weight: 600;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+  text-align: left;
+  animation: fadeInUp 0.28s ease both;
+  will-change: transform, opacity;
+}
+
+.ob-option:nth-child(1) { animation-delay: 0ms; }
+.ob-option:nth-child(2) { animation-delay: 40ms; }
+.ob-option:nth-child(3) { animation-delay: 80ms; }
+.ob-option:nth-child(4) { animation-delay: 120ms; }
+.ob-option:nth-child(5) { animation-delay: 160ms; }
+
+.ob-option:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.ob-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  color: var(--primary);
+}
+
+.ob-option-left {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.ob-option-tag {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.ob-option.selected .ob-option-tag {
+  color: var(--primary);
+  opacity: 0.75;
+}
+
+/* Dil seçim kartları */
+.ob-lang-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.ob-lang-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s5) var(--s5);
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  cursor: pointer;
+  color: var(--text);
+  transition: all var(--t-fast);
+  text-align: left;
+  animation: fadeInUp 0.3s ease both;
+  will-change: transform, opacity;
+}
+
+.ob-lang-btn:nth-child(1) { animation-delay: 0ms; }
+.ob-lang-btn:nth-child(2) { animation-delay: 60ms; }
+.ob-lang-btn:nth-child(3) { animation-delay: 120ms; }
+
+.ob-lang-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.ob-lang-flag { font-size: 36px; flex-shrink: 0; }
+
+.ob-lang-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+.ob-lang-name {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ob-lang-sub {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.ob-lang-arrow {
+  font-size: 18px;
+  color: var(--text-faint);
+}
+
+/* Impact ekranı */
+.ob-impact {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s6);
+  animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ob-impact-number {
+  font-size: 80px;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ob-impact-label {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ob-impact-sub {
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}
+
+.ob-impact-chips {
+  display: flex;
+  gap: var(--s3);
+}
+
+.ob-impact-chip {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-full);
+  padding: var(--s2) var(--s4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.ob-impact-chip span {
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+/* CTA butonu */
+.ob-cta {
+  width: 100%;
+  padding: var(--s4) var(--s6);
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--r-full);
+  color: white;
+  font-size: var(--text-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+  box-shadow: var(--shadow-primary);
+}
+
+.ob-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+.ob-cta:active { transform: scale(0.98); }
+.ob-cta:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.ob-nickname-input {
+  width: 100%;
+  padding: var(--s4) var(--s5);
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  color: var(--text);
+  font-size: var(--text-md);
+  font-weight: 600;
+  outline: none;
+  transition: border-color var(--t-fast);
+}
+.ob-nickname-input:focus {
+  border-color: var(--primary);
+}
+.ob-nickname-input::placeholder {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+/* Done ekranı */
+.ob-done {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s6);
+  animation: fadeInUp 0.4s ease;
+}
+
+.ob-done-icon {
+  font-size: 72px;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ob-done-title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ob-done-sub {
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}

@@ -1,0 +1,117 @@
+/* ── Verbyte Design Tokens v2 ─────────────────────────────── */
+
+:root {
+  /* Zemin — light lavender'ın karanlık yansıması */
+  --bg-deep:   #07060F;
+  --bg:        #0C0B1A;
+  --surface:   #141228;
+  --surface-2: #1D1535;
+  --surface-3: #271C44;
+
+  /* Glass */
+  --glass-bg:     rgba(12, 11, 26, 0.85);
+  --glass-blur:   blur(20px);
+  --glass-border: rgba(196, 176, 204, 0.10);
+
+  /* Primary — light'taki #827081 mauve'un aydınlatılmış hali */
+  --primary:       #C4B0CC;
+  --primary-dark:  #A890B4;
+  --primary-light: rgba(196, 176, 204, 0.14);
+  --primary-glow:  rgba(196, 176, 204, 0.25);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #C4B0CC, #827081);
+  --gradient-gold:    linear-gradient(135deg, #F59E0B, #FBBF24);
+  --gradient-green:   linear-gradient(135deg, #34D399, #10B981);
+
+  /* Accent */
+  --accent-teal:   #6CDAE7;
+  --accent-green:  #34D399;
+  --accent-red:    #F87171;
+  --accent-gold:   #FBBF24;
+  --accent-orange: #FB923C;
+
+  /* Text — light'taki #2D1F2C koyu mavunun açık karşıtı */
+  --text:       #EDE8F0;
+  --text-muted: #8A7D92;
+  --text-faint: #3D3050;
+
+  /* Border */
+  --border:        rgba(196, 176, 204, 0.10);
+  --border-strong: rgba(196, 176, 204, 0.20);
+
+  /* Typography (değişmez) */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   17px;
+  --text-lg:   20px;
+  --text-xl:   28px;
+  --text-2xl:  36px;
+  --text-hero: 56px;
+
+  /* Spacing (değişmez) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+  --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px;
+
+  /* Radius (değişmez) */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+  --r-xl: 20px; --r-2xl: 28px; --r-full: 999px;
+  --radius: var(--r-md);   /* App.css uyumu için alias */
+
+  /* Shadow */
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.6);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.7);
+  --shadow-primary: 0 4px 24px rgba(196, 176, 204, 0.25);
+  --shadow-gold:    0 4px 20px rgba(251, 191, 36, 0.30);
+
+  /* Transition (değişmez) */
+  --t-fast: 150ms ease;
+  --t-base: 200ms ease;
+  --t-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Safe area (değişmez) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+
+  /* Layout (değişmez) */
+  --header-h: 58px;
+  --nav-h:    68px;
+  --max-w:    480px;
+}
+
+/* ── Light tema (lavender/mauve) ──────────────────────────── */
+[data-theme="light"] {
+  --bg-deep:   #C6D2ED;
+  --bg:        #E7E6F7;
+  --surface:   #FDFCFF;
+  --surface-2: #E3D0D8;
+  --surface-3: #F0EAF0;
+
+  --glass-bg:     rgba(231, 230, 247, 0.85);
+  --glass-border: rgba(130, 112, 129, 0.15);
+
+  --primary:       #827081;
+  --primary-dark:  #6B5A6A;
+  --primary-light: rgba(130, 112, 129, 0.12);
+  --primary-glow:  rgba(130, 112, 129, 0.22);
+
+  --gradient-primary: linear-gradient(135deg, #827081, #AEA3B0);
+
+  --accent-teal:   #5B8FA8;
+  --accent-green:  #5E9E7A;
+  --accent-red:    #C0605A;
+  --accent-gold:   #B08040;
+
+  --text:       #2D1F2C;
+  --text-muted: #827081;
+  --text-faint: #AEA3B0;
+
+  --border:        rgba(130, 112, 129, 0.15);
+  --border-strong: rgba(130, 112, 129, 0.28);
+
+  --shadow-md:      0 4px 16px rgba(80, 60, 80, 0.10);
+  --shadow-lg:      0 8px 32px rgba(80, 60, 80, 0.15);
+  --shadow-primary: 0 4px 24px rgba(130, 112, 129, 0.20);
+}
