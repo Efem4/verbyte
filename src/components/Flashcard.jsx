@@ -36,6 +36,7 @@ export default function Flashcard({
   combo,
   levelColor,
   isNew,
+  ghostButtons = false,
 }) {
   const [flipped, setFlipped] = useState(false);
   const [particles, setParticles] = useState([]);
@@ -243,7 +244,7 @@ export default function Flashcard({
 
       <div className="card-actions">
         <motion.button
-          className="btn-skip"
+          className={`btn-skip${ghostButtons ? ' btn--ghost' : ''}`}
           whileTap={{ scale: 0.93 }}
           whileHover={{ scale: 1.04 }}
           onClick={handleSkipClick}
@@ -251,7 +252,7 @@ export default function Flashcard({
           ✗ Bilmedim
         </motion.button>
         <motion.button
-          className="btn-know"
+          className={`btn-know${ghostButtons ? ' btn--ghost' : ''}`}
           whileTap={{ scale: 0.93 }}
           whileHover={{ scale: 1.04 }}
           onClick={handleKnowClick}

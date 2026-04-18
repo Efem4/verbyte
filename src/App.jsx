@@ -16,15 +16,15 @@ function CardPanel({ langConfig, progress, onProgress, onDeckActiveChange, onDec
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {!isDailyActive && (
-        <div className="card-panel-toggle">
+        <div className="card-mode-chips">
           <button
-            className={`cpt-btn${cardMode === 'word' ? ' active' : ''}`}
+            className={`cmc-btn${cardMode === 'word' ? ' active' : ''}`}
             onClick={() => setCardMode('word')}
-          >🃏 Kelime</button>
+          >Kelime</button>
           <button
-            className={`cpt-btn${cardMode === 'sent' ? ' active' : ''}`}
+            className={`cmc-btn${cardMode === 'sent' ? ' active' : ''}`}
             onClick={() => setCardMode('sent')}
-          >📖 Cümle</button>
+          >Cümle</button>
         </div>
       )}
       <div style={{ flex: 1, overflow: 'auto' }}>

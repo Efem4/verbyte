@@ -26,13 +26,9 @@ export default function FlashcardPage({ langConfig, progress, onProgress, onDeck
   if (!langConfig) return null;
   const { categories, vocabulary, levelColors, threshold, wordKey, languageLabel, loadedLevels } = langConfig;
 
-  // Varsayılan açık seviye: en düşük unlocked, tamamlanmamış
-  const defaultOpen = LEVELS.find(l => {
-    if (!isLevelUnlocked(l, categories, vocabulary, progress, threshold)) return false;
-    return getLevelProgress(l, categories, vocabulary, progress) < 1;
-  }) ?? 'A1';
-
-  const [openLevel, setOpenLevel] = useState(defaultOpen);
+  const [activeLevel, setActiveLevel] = useState(() => {
+    return LEVELS.find(l => loadedLevels?.has(l)) ?? 'A1'
+  });
 
   // Kaç kategori gösterileceği: 7 günde 2 ekle, dailyGoal >= 20 → hepsi açık
   const resolvedFirstUse = firstUseDate
@@ -65,16 +61,10 @@ export default function FlashcardPage({ langConfig, progress, onProgress, onDeck
     });
   }
 
-  function handleOpenLevel(level) {
-    const unlocked = isLevelUnlocked(level, categories, vocabulary, progress, threshold);
-    if (!unlocked) return;
-    setOpenLevel(prev => prev === level ? null : level);
-    if (!loadedLevels?.has(level)) onLoadLevel?.(level);
-  }
-
-  // ── Ana ekran: accordion ──
+  // ── Ana ekran: horizontal level nav ──
   return (
     <div className="page fp-browse">
+      {/* Günlük çalışma butonu */}
       {slotReady && dailySlotWords.length > 0 && (
         <button className="daily-slot-btn" onClick={startDailySlot}>
           <span className="dsb-icon">📅</span>
@@ -85,93 +75,85 @@ export default function FlashcardPage({ langConfig, progress, onProgress, onDeck
           <span className="dsb-arrow">→</span>
         </button>
       )}
-      {(() => {
-        // Kümülatif kategori sayacı: A1→A2→B1→... sırasıyla unlockedCatCount kadar göster
-        let cumulativeCatIndex = 0;
-        return LEVELS.map(level => {
+
+      {/* ── Level Navigator ── */}
+      <div className="fp-level-nav">
+        {LEVELS.map(level => {
           const unlocked = isLevelUnlocked(level, categories, vocabulary, progress, threshold);
           const loaded = loadedLevels?.has(level) ?? false;
           const levelPct = loaded ? Math.round(getLevelProgress(level, categories, vocabulary, progress) * 100) : 0;
-          const isOpen = openLevel === level;
-          const levelCats = categories.filter(c => c.level === level);
-          const color = levelColors[level] ?? '#818CF8';
-
-          // Bu level'dan kaç kategori gösterilecek
-          const remaining = unlockedCatCount === Infinity
-            ? levelCats.length
-            : Math.max(0, unlockedCatCount - cumulativeCatIndex);
-          const visibleCats = levelCats.slice(0, remaining);
-          cumulativeCatIndex += levelCats.length;
-
+          const color = levelColors[level] ?? 'var(--primary)';
+          const isActive = activeLevel === level;
           return (
-            <div key={level} className={`fp-accordion${isOpen ? ' open' : ''}${!unlocked ? ' locked' : ''}`}>
-              {/* Accordion header */}
-              <button
-                className="fp-acc-header"
-                onClick={() => handleOpenLevel(level)}
-                disabled={!unlocked}
-              >
-                <span className="fp-acc-badge" style={{ background: unlocked ? color : 'var(--text-muted)' }}>
-                  {unlocked ? level : '🔒'}
-                </span>
-                <div className="fp-acc-bar-wrap">
-                  <div className="fp-acc-bar-track">
-                    <div
-                      className="fp-acc-bar-fill"
-                      style={{ width: `${levelPct}%`, background: color, opacity: unlocked ? 1 : 0.3 }}
-                    />
-                  </div>
-                </div>
-                <span className="fp-acc-pct" style={{ color: unlocked ? color : 'var(--text-muted)' }}>
-                  {!unlocked ? '—' : loaded ? `${levelPct}%` : '…'}
-                </span>
-                {unlocked && (
-                  <span className="fp-acc-chevron">{isOpen ? '▲' : '▼'}</span>
-                )}
-              </button>
-
-              {/* Kategori listesi */}
-              {isOpen && unlocked && !loaded && (
-                <div className="fp-acc-body" style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
-                  Yükleniyor…
-                </div>
+            <button
+              key={level}
+              className={`fp-lvl-pill${isActive ? ' active' : ''}${!unlocked ? ' locked' : ''}`}
+              style={isActive ? { background: color, borderColor: color } : {}}
+              onClick={() => {
+                if (!unlocked) return;
+                setActiveLevel(level);
+                if (!loadedLevels?.has(level)) onLoadLevel?.(level);
+              }}
+              disabled={!unlocked}
+            >
+              {unlocked ? level : '—'}
+              {unlocked && loaded && (
+                <span className="fp-lvl-pct">{levelPct}%</span>
               )}
-              {isOpen && unlocked && loaded && (
-                <div className="fp-acc-body">
-                  {visibleCats.map(cat => {
-                    const total = vocabulary[cat.id]?.length ?? 0;
-                    const known = getKnownCount(progress[cat.id]);
-                    const due = getDueCount(vocabulary[cat.id], wordKey, progress[cat.id]);
-                    const pct = total > 0 ? Math.round((known / total) * 100) : 0;
-
-                    return (
-                      <button
-                        key={cat.id}
-                        className="fp-cat-row"
-                        onClick={() => startCategory(cat.id)}
-                      >
-                        <span className="fp-cat-emoji">{cat.emoji}</span>
-                        <div className="fp-cat-info">
-                          <div className="fp-cat-top">
-                            <span className="fp-cat-label">{cat.label}</span>
-                            {due > 0 && <span className="fp-cat-due">tekrar</span>}
-                          </div>
-                          <div className="fp-cat-bar-track">
-                            <div
-                              className="fp-cat-bar-fill"
-                              style={{ width: `${pct}%`, background: cat.color ?? color }}
-                            />
-                          </div>
-                        </div>
-                        <span className="fp-cat-pct">{pct}%</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            </button>
           );
-        });
+        })}
+      </div>
+
+      {/* ── Seçili Level'ın Kategorileri ── */}
+      {(() => {
+        const loaded = loadedLevels?.has(activeLevel) ?? false;
+        const color = levelColors[activeLevel] ?? 'var(--primary)';
+        const levelCats = categories.filter(c => c.level === activeLevel);
+
+        let cumulativeCatIndex = 0;
+        let visibleCats = levelCats;
+        if (unlockedCatCount !== Infinity) {
+          LEVELS.forEach(l => {
+            const cats = categories.filter(c => c.level === l);
+            if (l === activeLevel) {
+              const remaining = Math.max(0, unlockedCatCount - cumulativeCatIndex);
+              visibleCats = cats.slice(0, remaining);
+            } else {
+              cumulativeCatIndex += cats.length;
+            }
+          });
+        }
+
+        if (!loaded) return (
+          <div className="fp-loading">Yükleniyor…</div>
+        );
+
+        return (
+          <div className="fp-cat-list">
+            {visibleCats.map(cat => {
+              const total = vocabulary[cat.id]?.length ?? 0;
+              const known = getKnownCount(progress[cat.id]);
+              const due = getDueCount(vocabulary[cat.id], wordKey, progress[cat.id]);
+              const pct = total > 0 ? Math.round((known / total) * 100) : 0;
+              return (
+                <button key={cat.id} className="fp-cat-row" onClick={() => startCategory(cat.id)}>
+                  <span className="fp-cat-emoji">{cat.emoji}</span>
+                  <div className="fp-cat-info">
+                    <div className="fp-cat-top">
+                      <span className="fp-cat-label">{cat.label}</span>
+                      {due > 0 && <span className="fp-cat-due">tekrar</span>}
+                    </div>
+                    <div className="fp-cat-bar-track">
+                      <div className="fp-cat-bar-fill" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                  </div>
+                  <span className="fp-cat-pct">{pct}%</span>
+                </button>
+              );
+            })}
+          </div>
+        );
       })()}
     </div>
   );

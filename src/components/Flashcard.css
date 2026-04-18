@@ -445,6 +445,22 @@
   opacity: 0.5;
 }
 
+/* Ghost butonlar — deneyimli kullanıcı için */
+.btn-skip.btn--ghost {
+  background: transparent;
+  border: 1.5px solid rgba(248, 113, 113, 0.35);
+  color: rgba(248, 113, 113, 0.6);
+}
+.btn-know.btn--ghost {
+  background: transparent;
+  border: 1.5px solid rgba(52, 211, 153, 0.35);
+  color: rgba(52, 211, 153, 0.6);
+}
+.btn-skip.btn--ghost:active,
+.btn-know.btn--ghost:active {
+  opacity: 1;
+}
+
 .btn-sentences {
   width: 100%;
   padding: 13px 20px;

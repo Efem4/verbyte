@@ -22,6 +22,9 @@ export default function DeckPage({
   const [sessionKnown, setSessionKnown] = useState(0);
   const [sessionMissed, setSessionMissed] = useState(0);
   const [combo, setCombo] = useState(0);
+  const [cardsSeen, setCardsSeen] = useState(() => {
+    try { return parseInt(localStorage.getItem('verbyte_cards_seen') || '0', 10) } catch { return 0 }
+  });
 
   if (!langConfig) return null;
 
@@ -43,6 +46,11 @@ export default function DeckPage({
     setSessionKnown(k => k + 1);
     setCombo(c => c + 1);
     setIdx(i => i + 1);
+    setCardsSeen(prev => {
+      const next = prev + 1;
+      localStorage.setItem('verbyte_cards_seen', String(next));
+      return next;
+    });
   }
 
   function handleSkip() {
@@ -51,6 +59,11 @@ export default function DeckPage({
     setSessionMissed(m => m + 1);
     setCombo(0);
     setIdx(i => i + 1);
+    setCardsSeen(prev => {
+      const next = prev + 1;
+      localStorage.setItem('verbyte_cards_seen', String(next));
+      return next;
+    });
   }
 
   const total = sessionKnown + sessionMissed;
@@ -97,6 +110,7 @@ export default function DeckPage({
               combo={combo}
               levelColor={category.levelColor}
               isNew={isNew(currentWord)}
+              ghostButtons={cardsSeen >= 3}
             />
           </div>
 
