@@ -272,7 +272,7 @@
 .card-new-badge {
   font-size: 11px;
   font-weight: 700;
-  background: rgba(52, 211, 153, 0.18);
+  background: rgba(196, 176, 204, 0.14);
   border: 1px solid rgba(52, 211, 153, 0.35);
   color: #34D399;
   padding: 3px 9px;
@@ -332,7 +332,7 @@
 
 /* Back */
 .card-back {
-  background: linear-gradient(145deg, #0A7A8A 0%, #1BB8CC 45%, #6CDAE7 100%);
+  background: linear-gradient(145deg, #1D1535 0%, #2D1A4A 45%, #3D2560 100%);
   color: #0A2230;
   transform: rotateY(180deg);
   justify-content: space-between;
@@ -344,7 +344,7 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  background: rgba(10, 34, 48, 0.1);
+  background: rgba(130, 112, 129, 0.15);
   border: 1px solid rgba(10, 34, 48, 0.2);
   color: #0A2230;
   padding: 4px 10px;
@@ -512,6 +512,18 @@
   color: #134e4a;
 }
 
+.card-flip-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 [data-theme="light"] .card-back {
-  background: linear-gradient(145deg, #22C4D5 0%, #6CDAE7 50%, #A8EDF5 100%);
+  background: linear-gradient(155deg, #F0EAF8 0%, #E3D0E8 50%, #C8B0D8 100%);
 }

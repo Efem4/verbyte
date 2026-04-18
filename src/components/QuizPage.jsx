@@ -88,6 +88,20 @@ function buildQuestions(vocabulary, wordKey, count, direction) {
 export default function QuizPage({ langConfig, onStudy }) {
   if (!langConfig) return null;
   const { vocabulary, wordKey, languageLabel } = langConfig;
+
+  // Vocabulary henüz boş mu?
+  const totalWords = Object.values(vocabulary || {}).reduce((s, arr) => s + arr.length, 0)
+  if (totalWords === 0) {
+    return (
+      <div className="page">
+        <div className="empty-state">
+          <div className="es-icon">📖</div>
+          <h3 className="es-title">Kelime yok henüz</h3>
+          <p className="es-desc">Önce Kartlar bölümünden kelime çalış — quiz için en az 4 kelime gerekli.</p>
+        </div>
+      </div>
+    )
+  }
   const langLabel = wordKey.toUpperCase(); // 'FR' | 'EN' | 'DE'
 
   const [phase, setPhase] = useState('setup');

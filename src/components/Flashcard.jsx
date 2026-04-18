@@ -4,13 +4,13 @@ import { getAudioUrl } from '../config/audioConfig';
 import './Flashcard.css';
 
 const COMBO_TIERS = [
-  { min: 20, gradient: 'linear-gradient(135deg, #F59E0B, #EF4444)', glow: 'rgba(245,158,11,0.65)', ambient: 'rgba(245,158,11,0.09)', label: '✨', pulse: true },
-  { min: 10, gradient: 'linear-gradient(135deg, #A855F7, #6366F1)', glow: 'rgba(168,85,247,0.65)', ambient: 'rgba(168,85,247,0.09)', label: '🔮', pulse: true },
-  { min: 5,  gradient: 'linear-gradient(135deg, #F97316, #EF4444)', glow: 'rgba(249,115,22,0.55)', ambient: 'rgba(249,115,22,0.07)', label: '🔥', pulse: false },
-  { min: 2,  gradient: 'linear-gradient(135deg, #F97316, #EF4444)', glow: 'rgba(249,115,22,0.3)',  ambient: null,                   label: '🔥', pulse: false },
+  { min: 20, gradient: 'linear-gradient(135deg, #C4B0CC, #9076A8)', glow: 'rgba(196,176,204,0.70)', ambient: 'rgba(196,176,204,0.10)', label: '◆', pulse: true  },
+  { min: 10, gradient: 'linear-gradient(135deg, #AA93BA, #765A96)', glow: 'rgba(170,147,186,0.60)', ambient: 'rgba(170,147,186,0.09)', label: '●', pulse: true  },
+  { min: 5,  gradient: 'linear-gradient(135deg, #9076A8, #5C3D84)', glow: 'rgba(144,118,168,0.50)', ambient: 'rgba(144,118,168,0.07)', label: '▲', pulse: false },
+  { min: 2,  gradient: 'linear-gradient(135deg, #7A6090, #5C3D84)', glow: 'rgba(122, 96,144,0.30)', ambient: null,                    label: '▸', pulse: false },
 ];
 
-const PARTICLE_COLORS = ['#34D399', '#6EE7B7', '#FCD34D', '#FBBF24', '#67E8F9', '#A7F3D0', '#86EFAC', '#FDE68A'];
+const PARTICLE_COLORS = ['#C4B0CC', '#D4C4DC', '#AA93BA', '#9076A8', '#E8DFF0', '#B89CC8', '#765A96', '#F0EAF8'];
 
 function getComboBadge(count) {
   return COMBO_TIERS.find((t) => count >= t.min) ?? COMBO_TIERS[COMBO_TIERS.length - 1];
@@ -39,6 +39,9 @@ export default function Flashcard({
 }) {
   const [flipped, setFlipped] = useState(false);
   const [particles, setParticles] = useState([]);
+  const [showHint, setShowHint] = useState(
+    () => !localStorage.getItem('verbyte_hint_dismissed')
+  );
   const shakeWrapperRef = useRef(null);
   const shakeTimeoutRef = useRef(null);
   const particleTimeoutRef = useRef(null);
@@ -168,6 +171,10 @@ export default function Flashcard({
                 if (Math.abs(x.get()) < 5) {
                   if (!flipped) wasFlippedRef.current = true;
                   setFlipped(f => !f);
+                  if (showHint) {
+                    setShowHint(false);
+                    localStorage.setItem('verbyte_hint_dismissed', '1');
+                  }
                 }
               }}
             >
@@ -208,6 +215,9 @@ export default function Flashcard({
                   <div className="card-front-bottom">
                     <div className="card-tap">Dokun: çevir · Kaydır: geç</div>
                   </div>
+                  {showHint && (
+                    <div className="card-flip-hint">Dokunun → çevirmek için</div>
+                  )}
                 </div>
 
                 {/* Back — mirrors front layout exactly */}

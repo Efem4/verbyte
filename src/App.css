@@ -2772,3 +2772,60 @@ body {
   padding: 4px 10px;
   flex-shrink: 0;
 }
+
+/* Empty States */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 32px;
+  text-align: center;
+}
+.es-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+.es-title {
+  font-size: var(--text-lg);
+  font-weight: var(--fw-bold, 800);
+  color: var(--text);
+  margin: 0;
+}
+.es-desc {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Aktivite Heatmap */
+.heatmap-wrap {
+  padding: 16px 20px 8px;
+}
+.heatmap-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  gap: 3px;
+}
+.hm-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--primary);
+  min-height: 10px;
+}
+.hm-today {
+  outline: 1.5px solid var(--primary);
+  outline-offset: 1px;
+}

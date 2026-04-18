@@ -1,52 +1,69 @@
 import { useState } from 'react';
 import { getMasteredCount } from '../utils/srs';
 
+function buildHeatmapData(langCode) {
+  const today = new Date()
+  const days = []
+  for (let i = 83; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - i)
+    const key = `verbyte_daily_${langCode}_${d.toISOString().split('T')[0]}`
+    let val = 0
+    try {
+      const s = JSON.parse(localStorage.getItem(key))
+      val = s?.totalCards ?? 0
+    } catch {}
+    days.push({ date: d, val })
+  }
+  return days
+}
+
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
 const LEVEL_MOTIVATIONS = {
   A1: [
-    { min: 100, text: 'Temel kelimeler tamam! 🎉' },
+    { min: 100, text: 'Temel kelimeler tamam!' },
     { min: 75,  text: 'Neredeyse bitirdin!' },
     { min: 50,  text: 'Yarı yoldasın, devam!' },
     { min: 25,  text: 'Güzel başlangıç!' },
-    { min: 0,   text: 'Buradan başla 👋' },
+    { min: 0,   text: 'Buradan başla' },
   ],
   A2: [
-    { min: 100, text: 'Günlük konuşma artık kolay! ✨' },
+    { min: 100, text: 'Günlük konuşma artık kolay!' },
     { min: 75,  text: 'Az kaldı, son hamle!' },
     { min: 50,  text: 'İyi gidiyorsun!' },
     { min: 25,  text: 'Devam et!' },
-    { min: 0,   text: 'A1\'i bitirince aç 🔒' },
+    { min: 0,   text: 'A1\'i bitirince aç' },
   ],
   B1: [
-    { min: 100, text: 'Orta seviye tamam! 💪' },
+    { min: 100, text: 'Orta seviye tamam!' },
     { min: 75,  text: 'Çok yaklaştın!' },
     { min: 50,  text: 'Yarı yolun geçtin!' },
     { min: 25,  text: 'Isınıyorsun!' },
-    { min: 0,   text: 'A2\'yi bitirince aç 🔒' },
+    { min: 0,   text: 'A2\'yi bitirince aç' },
   ],
   B2: [
-    { min: 100, text: 'İleri seviye! Harika 🔥' },
+    { min: 100, text: 'İleri seviye! Harika.' },
     { min: 75,  text: 'Bitiyor!' },
     { min: 50,  text: 'Yarısını geçtin!' },
     { min: 25,  text: 'Devam et!' },
-    { min: 0,   text: 'B1\'i bitirince aç 🔒' },
+    { min: 0,   text: 'B1\'i bitirince aç' },
   ],
   C1: [
-    { min: 100, text: 'Ustasın! 🏆' },
+    { min: 100, text: 'Ustasın!' },
     { min: 75,  text: 'Finale yakın!' },
     { min: 50,  text: 'Zirveye tırmanıyorsun!' },
     { min: 25,  text: 'İleri gidiyorsun!' },
-    { min: 0,   text: 'B2\'yi bitirince aç 🔒' },
+    { min: 0,   text: 'B2\'yi bitirince aç' },
   ],
 };
 
 const OVERALL_MEDALS = [
-  { min: 100, label: '🏆 Usta' },
-  { min: 75,  label: '🥇 İleri Seviye' },
-  { min: 50,  label: '🥈 Orta Seviye' },
-  { min: 25,  label: '🥉 Başlangıç' },
-  { min: 0,   label: '🌱 Yeni Başlayan' },
+  { min: 100, label: 'Usta' },
+  { min: 75,  label: 'İleri Seviye' },
+  { min: 50,  label: 'Orta Seviye' },
+  { min: 25,  label: 'Başlangıç' },
+  { min: 0,   label: 'Yeni Başlayan' },
 ];
 
 function getMotivation(level, pct) {
@@ -73,7 +90,7 @@ function getLevelUnlocked(level, categories, vocabulary, progress, threshold) {
   return getLevelStats(prev, categories, vocabulary, progress).pct >= Math.round(threshold * 100);
 }
 
-export default function ProgressPage({ langConfig, progress, streak, firstUseDate, dailySession, onReset, userId, nickname }) {
+export default function ProgressPage({ langConfig, langCode, wordKey, progress, streak, firstUseDate, dailySession, onReset, userId, nickname }) {
   if (!langConfig) return null;
   const { categories, vocabulary, levelColors, threshold } = langConfig;
 
@@ -97,6 +114,31 @@ export default function ProgressPage({ langConfig, progress, streak, firstUseDat
 
   return (
     <div className="page progress-page">
+
+      {/* Aktivite heatmap */}
+      {(() => {
+        const days = buildHeatmapData(langCode ?? wordKey ?? langConfig?.wordKey ?? '')
+        const max = Math.max(...days.map(d => d.val), 1)
+        return (
+          <div className="heatmap-wrap">
+            <div className="heatmap-label">Son 12 hafta</div>
+            <div className="heatmap-grid">
+              {days.map((d, i) => {
+                const intensity = d.val === 0 ? 0 : Math.max(0.15, d.val / max)
+                const isToday = d.date.toDateString() === new Date().toDateString()
+                return (
+                  <div
+                    key={i}
+                    className={`hm-cell${isToday ? ' hm-today' : ''}`}
+                    style={{ opacity: d.val === 0 ? 0.12 : intensity }}
+                    title={`${d.date.toLocaleDateString('tr-TR')}: ${d.val} kart`}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Profil ── */}
       {nickname && (
@@ -135,16 +177,16 @@ export default function ProgressPage({ langConfig, progress, streak, firstUseDat
         <div className="overall-right">
           <div className="overall-medal">{medal.label}</div>
           {masteredWords > 0 && (
-            <div className="overall-mastered">⭐ {masteredWords} öğrenildi</div>
+            <div className="overall-mastered">{masteredWords} öğrenildi</div>
           )}
           <div className="overall-stats-row">
             <div className="os-chip">
               <span className="os-val">{streak?.count ?? 0}</span>
-              <span className="os-lbl">🔥 seri</span>
+              <span className="os-lbl">günlük seri</span>
             </div>
             <div className="os-chip">
               <span className="os-val">{daysSince}</span>
-              <span className="os-lbl">📅 gün</span>
+              <span className="os-lbl">gün</span>
             </div>
           </div>
         </div>
@@ -192,7 +234,7 @@ export default function ProgressPage({ langConfig, progress, streak, firstUseDat
                   <span className="lbr-motivation">{motivation}</span>
                 </div>
                 <span className="lbr-pct" style={{ color: unlocked ? color : 'var(--text-muted)' }}>
-                  {unlocked ? `${pct}%` : '🔒'}
+                  {unlocked ? `${pct}%` : '—'}
                 </span>
               </div>
               <div className="lbr-track">
