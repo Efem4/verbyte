@@ -518,17 +518,19 @@ export default function SentencesPage({ langConfig, onStudy }) {
     }
     return (
       <div className="page quiz-setup">
-        <h2 className="quiz-setup-title">Pratik</h2>
-        <p className="quiz-setup-sub">Cümle alıştırmaları</p>
+        <div className="setup-core">
+          <h2 className="quiz-setup-title">Pratik</h2>
+          <p className="quiz-setup-sub">Cümle alıştırmaları</p>
 
-        <button className="quiz-quick-start" onClick={startPractice}>
-          <span className="qqs-label">{modeLabels[mode]} · {count ?? '∞'} soru</span>
-          <span className="qqs-cta">Başla →</span>
-        </button>
+          <button className="quiz-quick-start" onClick={startPractice}>
+            <span className="qqs-label">{modeLabels[mode]} · {count ?? '∞'} soru</span>
+            <span className="qqs-cta">Başla →</span>
+          </button>
 
-        <button className="quiz-settings-toggle" onClick={() => setShowSettings(v => !v)}>
-          {showSettings ? '▲ Gizle' : '⚙ Ayarları değiştir'}
-        </button>
+          <button className="quiz-settings-toggle" onClick={() => setShowSettings(v => !v)}>
+            {showSettings ? '▲ Gizle' : '⚙ Ayarları değiştir'}
+          </button>
+        </div>
 
         {showSettings && (
           <div className="quiz-settings-panel">
@@ -560,6 +562,7 @@ export default function SentencesPage({ langConfig, onStudy }) {
             </div>
           </div>
         )}
+        <div className="setup-spacer" />
       </div>
     );
   }

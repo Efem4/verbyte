@@ -238,19 +238,21 @@ export default function QuizPage({ langConfig, onStudy }) {
   if (phase === 'setup') {
     return (
       <div className="page quiz-setup">
-        <h2 className="quiz-setup-title">Quiz</h2>
-        <p className="quiz-setup-sub">{languageLabel} kelimelerini test et</p>
+        <div className="setup-core">
+          <h2 className="quiz-setup-title">Quiz</h2>
+          <p className="quiz-setup-sub">{languageLabel} kelimelerini test et</p>
 
-        <button className="quiz-quick-start" onClick={startQuiz}>
-          <span className="qqs-label">
-            {mode === 'classic' ? 'Classic' : 'Zen'} · {questionCount ?? '∞'} soru · {direction === 'tr-word' ? 'TR → ' + langLabel : langLabel + ' → TR'}
-          </span>
-          <span className="qqs-cta">Başla →</span>
-        </button>
+          <button className="quiz-quick-start" onClick={startQuiz}>
+            <span className="qqs-label">
+              {mode === 'classic' ? 'Classic' : 'Zen'} · {questionCount ?? '∞'} soru · {direction === 'tr-word' ? 'TR → ' + langLabel : langLabel + ' → TR'}
+            </span>
+            <span className="qqs-cta">Başla →</span>
+          </button>
 
-        <button className="quiz-settings-toggle" onClick={() => setShowSettings(v => !v)}>
-          {showSettings ? '▲ Gizle' : '⚙ Ayarları değiştir'}
-        </button>
+          <button className="quiz-settings-toggle" onClick={() => setShowSettings(v => !v)}>
+            {showSettings ? '▲ Gizle' : '⚙ Ayarları değiştir'}
+          </button>
+        </div>
 
         {showSettings && (
           <div className="quiz-settings-panel">
@@ -304,6 +306,7 @@ export default function QuizPage({ langConfig, onStudy }) {
             </div>
           </div>
         )}
+        <div className="setup-spacer" />
       </div>
     );
   }
