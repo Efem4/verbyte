@@ -480,8 +480,9 @@ export default function SentencesPage({ langConfig, onStudy }) {
     return () => { active = false; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [langConfig?.code]);
-  const [mode, setMode] = useState('fill');
-  const [count, setCount] = useState(10);
+  const [mode, setMode]   = useState(() => { try { return JSON.parse(localStorage.getItem('verbyte_practice_prefs'))?.mode  ?? 'fill' } catch { return 'fill' } });
+  const [count, setCount] = useState(() => { try { return JSON.parse(localStorage.getItem('verbyte_practice_prefs'))?.count ?? 10   } catch { return 10   } });
+  const [showSettings, setShowSettings] = useState(false);
   const [doneCorrect, setDoneCorrect] = useState(0);
   const [doneWrong, setDoneWrong] = useState(0);
 
@@ -510,55 +511,55 @@ export default function SentencesPage({ langConfig, onStudy }) {
   }
 
   if (phase === 'setup') {
+    const modeLabels = { fill: 'Boşluk Doldur', sort: 'Kelime Sırala', write: 'Yaz' };
+    function startPractice() {
+      localStorage.setItem('verbyte_practice_prefs', JSON.stringify({ mode, count }));
+      setPhase('playing');
+    }
     return (
       <div className="page quiz-setup">
         <h2 className="quiz-setup-title">Pratik</h2>
         <p className="quiz-setup-sub">Cümle alıştırmaları</p>
 
-        <div className="quiz-section-label">Mod</div>
-        <div className="quiz-mode-row" style={{ flexWrap: 'wrap' }}>
-          <button
-            className={`quiz-mode-btn${mode === 'fill' ? ' active' : ''}`}
-            onClick={() => setMode('fill')}
-          >
-            <span className="qmode-icon">🔤</span>
-            <span className="qmode-name">Boşluk Doldur</span>
-            <span className="qmode-desc">Eksik kelimeyi bul</span>
-          </button>
-          <button
-            className={`quiz-mode-btn${mode === 'sort' ? ' active' : ''}`}
-            onClick={() => setMode('sort')}
-          >
-            <span className="qmode-icon">🔀</span>
-            <span className="qmode-name">Kelime Sırala</span>
-            <span className="qmode-desc">Cümleyi oluştur</span>
-          </button>
-          <button
-            className={`quiz-mode-btn${mode === 'write' ? ' active' : ''}`}
-            onClick={() => setMode('write')}
-          >
-            <span className="qmode-icon">✏️</span>
-            <span className="qmode-name">Yaz</span>
-            <span className="qmode-desc">Cümleyi kendin yaz</span>
-          </button>
-        </div>
-
-        <div className="quiz-section-label">Soru Sayısı</div>
-        <div className="quiz-count-row">
-          {COUNTS.map((c) => (
-            <button
-              key={c ?? '∞'}
-              className={`quiz-count-btn${count === c ? ' active' : ''}`}
-              onClick={() => setCount(c)}
-            >
-              {c ?? '∞'}
-            </button>
-          ))}
-        </div>
-
-        <button className="quiz-start-btn" onClick={() => setPhase('playing')}>
-          Başla
+        <button className="quiz-quick-start" onClick={startPractice}>
+          <span className="qqs-label">{modeLabels[mode]} · {count ?? '∞'} soru</span>
+          <span className="qqs-cta">Başla →</span>
         </button>
+
+        <button className="quiz-settings-toggle" onClick={() => setShowSettings(v => !v)}>
+          {showSettings ? '▲ Gizle' : '⚙ Ayarları değiştir'}
+        </button>
+
+        {showSettings && (
+          <div className="quiz-settings-panel">
+            <div className="quiz-section-label">Mod</div>
+            <div className="quiz-mode-row" style={{ flexWrap: 'wrap' }}>
+              <button className={`quiz-mode-btn${mode === 'fill' ? ' active' : ''}`} onClick={() => setMode('fill')}>
+                <span className="qmode-icon">🔤</span>
+                <span className="qmode-name">Boşluk Doldur</span>
+                <span className="qmode-desc">Eksik kelimeyi bul</span>
+              </button>
+              <button className={`quiz-mode-btn${mode === 'sort' ? ' active' : ''}`} onClick={() => setMode('sort')}>
+                <span className="qmode-icon">🔀</span>
+                <span className="qmode-name">Kelime Sırala</span>
+                <span className="qmode-desc">Cümleyi oluştur</span>
+              </button>
+              <button className={`quiz-mode-btn${mode === 'write' ? ' active' : ''}`} onClick={() => setMode('write')}>
+                <span className="qmode-icon">✏️</span>
+                <span className="qmode-name">Yaz</span>
+                <span className="qmode-desc">Cümleyi kendin yaz</span>
+              </button>
+            </div>
+            <div className="quiz-section-label">Soru Sayısı</div>
+            <div className="quiz-count-row">
+              {COUNTS.map((c) => (
+                <button key={c ?? '∞'} className={`quiz-count-btn${count === c ? ' active' : ''}`} onClick={() => setCount(c)}>
+                  {c ?? '∞'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
