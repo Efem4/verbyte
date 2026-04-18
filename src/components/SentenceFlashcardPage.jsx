@@ -53,16 +53,17 @@ function failSentEntry(prev, sentenceId) {
   return { ...prev, [sentenceId]: { interval: 0, due: Date.now(), reps: e.reps || 0 } };
 }
 
-function buildSentQueue(sentences, sentProgress) {
+function buildSentQueue(sentences, sentProgress, maxCount = null) {
   const now = Date.now();
   const due = sentences.filter(s => {
     const e = sentProgress[s.id];
     return e && e.due <= now;
   });
   const newSents = sentences.filter(s => !sentProgress[s.id]);
-  const maxNew = Math.min(5, newSents.length);
+  const maxNew = maxCount ? Math.min(maxCount, newSents.length) : Math.min(5, newSents.length);
   const picked = [...shuffle(due), ...shuffle(newSents).slice(0, maxNew)];
-  return picked.length > 0 ? picked : shuffle(sentences);
+  const result = picked.length > 0 ? picked : shuffle(sentences);
+  return maxCount ? result.slice(0, maxCount) : result;
 }
 
 export default function SentenceFlashcardPage({ langConfig }) {
@@ -72,6 +73,10 @@ export default function SentenceFlashcardPage({ langConfig }) {
   const [sentProgress, setSentProgress] = useState(() => langCode ? loadSentProgress(langCode) : {});
   const [activeLevel, setActiveLevel] = useState(() => {
     return LEVELS.find(l => langConfig?.loadedLevels?.has(l)) ?? 'A1';
+  });
+  const [sessionCount, setSessionCount] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('verbyte_sent_count')) ?? 10; }
+    catch { return 10; }
   });
   const [selectedCat, setSelectedCat] = useState(null);
   const [queue, setQueue] = useState([]);
@@ -107,7 +112,7 @@ export default function SentenceFlashcardPage({ langConfig }) {
 
   function startCategory(cat) {
     const all = cat.sentences ?? [];
-    const q = buildSentQueue(all, sentProgress);
+    const q = buildSentQueue(all, sentProgress, sessionCount);
     setSelectedCat(cat);
     setQueue(q);
     setSessionKnown(0);
@@ -257,6 +262,21 @@ export default function SentenceFlashcardPage({ langConfig }) {
         })}
       </div>
 
+      {/* Oturum sayısı seçici */}
+      <div className="sent-count-row">
+        {[5, 10, 20, null].map(c => (
+          <button
+            key={c ?? '∞'}
+            className={`sent-count-btn${sessionCount === c ? ' active' : ''}`}
+            onClick={() => {
+              setSessionCount(c);
+              localStorage.setItem('verbyte_sent_count', JSON.stringify(c));
+            }}
+          >{c ?? '∞'}</button>
+        ))}
+        <span className="sent-count-label">cümle</span>
+      </div>
+
       {/* Seçili level'ın cümle kategorileri */}
       {(() => {
         const isSentLoaded = loadedSentLevels.has(activeLevel);
@@ -290,7 +310,6 @@ export default function SentenceFlashcardPage({ langConfig }) {
                     <div className="fp-cat-top">
                       <span className="fp-cat-label">{cat.label}</span>
                       {due > 0 && <span className="fp-cat-due">tekrar</span>}
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{total} cümle</span>
                     </div>
                     <div className="fp-cat-bar-track">
                       <div className="fp-cat-bar-fill" style={{ width: `${pct}%`, background: color }} />
