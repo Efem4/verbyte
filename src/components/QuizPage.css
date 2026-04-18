@@ -2,9 +2,10 @@
 .quiz-setup {
   align-items: center;
   text-align: center;
-  justify-content: center;
-  min-height: calc(100dvh - 58px - 64px);
-  padding-top: 16px;
+  justify-content: flex-start;
+  height: calc(100dvh - var(--header-h) - var(--nav-h));
+  overflow: hidden;
+  padding-top: 48px;
   gap: 16px;
 }
 
@@ -226,10 +227,14 @@
   width: 100%;
   border-top: 1px solid var(--border);
   padding-top: 16px;
+  padding-bottom: 16px;
   margin-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+  max-height: calc(100dvh - var(--header-h) - var(--nav-h) - 200px);
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Playing ─────────────────────────────────────────────────── */

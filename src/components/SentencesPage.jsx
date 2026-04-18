@@ -502,7 +502,7 @@ export default function SentencesPage({ langConfig, onStudy }) {
 
   if (sentencesLoading) {
     return (
-      <div className="page quiz-setup" style={{ justifyContent: 'center', alignItems: 'center' }}>
+      <div className="page quiz-setup" style={{ alignItems: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>💬</div>
         <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Cümleler yükleniyor…</p>
       </div>
