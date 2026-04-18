@@ -16,15 +16,9 @@ import { buildSmartQueue, updateEntry, getDueCount, getMasteredCount } from '../
 import storage from '../utils/storage';
 import { getAudioUrl } from '../utils/audioConfig';
 
-// ─── Veri ────────────────────────────────────────────────────────────────────
-const DATA = {
-  A1: require('../../assets/data/fr/A1.json'),
-  // A2, B1, B2, C1 → ileride lazy load
-};
-
-const LEVELS      = ['A1', 'A2', 'B1', 'B2', 'C1'];
-const PROGRESS_KEY = 'fr_progress';
-const NEW_LIMIT    = 5;
+// ─── Sabitler ────────────────────────────────────────────────────────────────
+const LEVELS    = ['A1', 'A2', 'B1', 'B2', 'C1'];
+const NEW_LIMIT = 5;
 
 // ─── Yardımcılar ─────────────────────────────────────────────────────────────
 function capitalize(str) {
@@ -32,19 +26,10 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
 }
 
-function groupByCategory(words) {
-  const map = {};
-  words.forEach(w => {
-    if (!map[w.cat]) map[w.cat] = [];
-    map[w.cat].push(w);
-  });
-  return map;
-}
-
 // ─── Dahili Flashcard komponenti ─────────────────────────────────────────────
 const { width } = Dimensions.get('window');
 
-function Flashcard({ word, onKnow, onSkip, combo }) {
+function Flashcard({ word, onKnow, onSkip, combo, langCode, wordKey }) {
   const [flipped, setFlipped] = useState(false);
   const flipAnim  = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -61,7 +46,7 @@ function Flashcard({ word, onKnow, onSkip, combo }) {
   useEffect(() => {
     if (!word?.id) return;
     let sound;
-    const url = getAudioUrl('fr', word.id);
+    const url = getAudioUrl(langCode, word.id);
     Audio.Sound.createAsync({ uri: url })
       .then(({ sound: s }) => {
         sound = s;
@@ -74,7 +59,7 @@ function Flashcard({ word, onKnow, onSkip, combo }) {
 
   const playSound = () => {
     if (!word?.id) return;
-    const url = getAudioUrl('fr', word.id);
+    const url = getAudioUrl(langCode, word.id);
     Audio.Sound.createAsync({ uri: url })
       .then(({ sound: s }) => {
         s.playAsync().catch(() => {});
@@ -136,7 +121,7 @@ function Flashcard({ word, onKnow, onSkip, combo }) {
             pointerEvents={flipped ? 'none' : 'auto'}
           >
             <Text style={fc.catLabel}>{capitalize(word.cat)}</Text>
-            <Text style={fc.wordText}>{word.word}</Text>
+            <Text style={fc.wordText}>{word[wordKey]}</Text>
             <Text style={fc.tapHint}>Çevirmek için dokun</Text>
             <TouchableOpacity
               style={fc.soundBtn}
@@ -298,12 +283,11 @@ const fc = StyleSheet.create({
 });
 
 // ─── Ana Ekran ────────────────────────────────────────────────────────────────
-export default function CardsScreen() {
+export default function CardsScreen({ langConfig }) {
   // Phase yönetimi
   const [phase, setPhase]             = useState('browse');   // 'browse' | 'studying' | 'done'
   const [activeLevel, setActiveLevel] = useState('A1');
-  const [progress, setProgress]       = useState({});         // fr_progress
-  const [categories, setCategories]   = useState({});         // { catId: [words] }
+  const [progress, setProgress]       = useState({});         // progress kayıtları
 
   // Studying state
   const [activeCat, setActiveCat]     = useState(null);
@@ -315,26 +299,26 @@ export default function CardsScreen() {
 
   // ── İlk yükleme ─────────────────────────────────────────────────────────
   useEffect(() => {
+    if (!langConfig?.progressKey) return;
     (async () => {
-      const saved = await storage.getJSON(PROGRESS_KEY, {});
+      const saved = await storage.getJSON(langConfig.progressKey, {});
       setProgress(saved);
-      const words = DATA['A1']?.words ?? [];
-      setCategories(groupByCategory(words));
     })();
-  }, []);
+  }, [langConfig?.progressKey]);
 
   // ── Progress kaydet ──────────────────────────────────────────────────────
   const saveProgress = useCallback(async (newProg) => {
     setProgress(newProg);
-    await storage.setJSON(PROGRESS_KEY, newProg);
-  }, []);
+    await storage.setJSON(langConfig.progressKey, newProg);
+  }, [langConfig?.progressKey]);
 
   // ── Kategori başlat ─────────────────────────────────────────────────────
   const startCategory = useCallback((catId) => {
-    const words = categories[catId] ?? [];
+    const vocabulary = langConfig?.vocabulary ?? {};
+    const words = vocabulary[catId] ?? [];
     if (!words.length) return;
     const catProgress = progress[catId] ?? {};
-    const q = buildSmartQueue(words, 'word', catProgress, NEW_LIMIT);
+    const q = buildSmartQueue(words, langConfig.wordKey, catProgress, NEW_LIMIT);
     setActiveCat(catId);
     setQueue(q);
     setQueuePos(0);
@@ -342,10 +326,11 @@ export default function CardsScreen() {
     setSkipCount(0);
     setCombo(0);
     setPhase('studying');
-  }, [categories, progress]);
+  }, [langConfig, progress]);
 
   // ── Mevcut kelime ────────────────────────────────────────────────────────
-  const currentWords  = activeCat ? (categories[activeCat] ?? []) : [];
+  const vocabulary    = langConfig?.vocabulary ?? {};
+  const currentWords  = activeCat ? (vocabulary[activeCat] ?? []) : [];
   const currentWord   = queue.length > 0 ? currentWords[queue[queuePos]] : null;
 
   // ── İleri git ────────────────────────────────────────────────────────────
@@ -363,12 +348,13 @@ export default function CardsScreen() {
   // ── Know ─────────────────────────────────────────────────────────────────
   const handleKnow = useCallback(async () => {
     if (!currentWord || !activeCat) return;
+    const wordKey = langConfig?.wordKey ?? 'id';
     const catProgress = progress[activeCat] ?? {};
-    const entry   = catProgress[currentWord.word];
+    const entry   = catProgress[currentWord[wordKey]];
     const updated = updateEntry(entry, true);
     const newProg = {
       ...progress,
-      [activeCat]: { ...catProgress, [currentWord.word]: updated },
+      [activeCat]: { ...catProgress, [currentWord[wordKey]]: updated },
     };
     await saveProgress(newProg);
     setKnowCount(c => c + 1);
@@ -379,12 +365,13 @@ export default function CardsScreen() {
   // ── Skip ─────────────────────────────────────────────────────────────────
   const handleSkip = useCallback(async () => {
     if (!currentWord || !activeCat) return;
+    const wordKey = langConfig?.wordKey ?? 'id';
     const catProgress = progress[activeCat] ?? {};
-    const entry   = catProgress[currentWord.word];
+    const entry   = catProgress[currentWord[wordKey]];
     const updated = updateEntry(entry, false);
     const newProg = {
       ...progress,
-      [activeCat]: { ...catProgress, [currentWord.word]: updated },
+      [activeCat]: { ...catProgress, [currentWord[wordKey]]: updated },
     };
     await saveProgress(newProg);
     setSkipCount(c => c + 1);
@@ -398,16 +385,42 @@ export default function CardsScreen() {
     return {
       total: words.length,
       known: getMasteredCount(catProg),
-      due:   getDueCount(words, 'word', catProg),
+      due:   getDueCount(words, langConfig?.wordKey ?? 'id', catProg),
     };
-  }, [progress]);
+  }, [progress, langConfig?.wordKey]);
+
+  // ── langConfig yoksa loading göster ─────────────────────────────────────
+  if (!langConfig || !langConfig.vocabulary) {
+    return (
+      <SafeAreaView style={s.safe}>
+        <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: COLORS.muted, fontSize: 15 }}>Yükleniyor...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ════════════════════════════════════════════════════════════════════════════
   // PHASE: browse
   // ════════════════════════════════════════════════════════════════════════════
   if (phase === 'browse') {
-    const levelWords = DATA[activeLevel]?.words ?? [];
-    const levelCats  = groupByCategory(levelWords);
+    // langConfig.vocabulary zaten catId → [words] formatında gruplanmış
+    // langConfig.categories → [{ id, label, emoji, level }]
+    // Aktif seviyeye göre kategorileri filtrele
+    const levelCatIds = (langConfig.categories ?? [])
+      .filter(c => c.level === activeLevel || !c.level)
+      .map(c => c.id);
+
+    // vocabulary'den sadece bu level'a ait kategorileri al
+    // level bilgisi yoksa tüm vocabulary'yi göster
+    const levelCats = levelCatIds.length > 0
+      ? Object.fromEntries(
+          levelCatIds
+            .filter(id => langConfig.vocabulary[id])
+            .map(id => [id, langConfig.vocabulary[id]])
+        )
+      : langConfig.vocabulary;
 
     return (
       <SafeAreaView style={s.safe}>
@@ -416,7 +429,7 @@ export default function CardsScreen() {
         {/* Başlık */}
         <View style={s.header}>
           <Text style={s.headerTitle}>Kartlar</Text>
-          <Text style={s.headerSub}>Fransızca kelime çalış</Text>
+          <Text style={s.headerSub}>{langConfig.languageLabel} kelime çalış</Text>
         </View>
 
         {/* Level pill navigator */}
@@ -427,13 +440,15 @@ export default function CardsScreen() {
         >
           {LEVELS.map(lvl => {
             const isActive   = lvl === activeLevel;
-            const isUnlocked = lvl === 'A1';
+            const isUnlocked = langConfig.loadedLevels
+              ? langConfig.loadedLevels.has(lvl)
+              : lvl === 'A1';
             return (
               <TouchableOpacity
                 key={lvl}
                 style={[
                   s.pill,
-                  isActive   && { backgroundColor: LEVEL_COLORS[lvl] },
+                  isActive   && { backgroundColor: (langConfig.levelColors ?? LEVEL_COLORS)[lvl] },
                   !isUnlocked && s.pillLocked,
                 ]}
                 onPress={() => isUnlocked && setActiveLevel(lvl)}
@@ -457,6 +472,11 @@ export default function CardsScreen() {
           {Object.entries(levelCats).map(([catId, words]) => {
             const { total, known, due } = getCatStats(catId, words);
             const pct = total > 0 ? known / total : 0;
+            const catMeta = (langConfig.categories ?? []).find(c => c.id === catId);
+            const catLabel = catMeta
+              ? `${catMeta.emoji ?? ''} ${catMeta.label ?? capitalize(catId)}`.trim()
+              : capitalize(catId);
+            const levelColor = (langConfig.levelColors ?? LEVEL_COLORS)[activeLevel];
 
             return (
               <TouchableOpacity
@@ -466,7 +486,7 @@ export default function CardsScreen() {
                 activeOpacity={0.75}
               >
                 <View style={s.catCardTop}>
-                  <Text style={s.catName}>{capitalize(catId)}</Text>
+                  <Text style={s.catName}>{catLabel}</Text>
                   <View style={s.catRight}>
                     {due > 0 && (
                       <View style={s.dueBadge}>
@@ -482,7 +502,7 @@ export default function CardsScreen() {
                       s.progressFill,
                       {
                         width: `${Math.round(pct * 100)}%`,
-                        backgroundColor: LEVEL_COLORS[activeLevel],
+                        backgroundColor: levelColor,
                       },
                     ]}
                   />
@@ -536,6 +556,8 @@ export default function CardsScreen() {
           onKnow={handleKnow}
           onSkip={handleSkip}
           combo={combo}
+          langCode={langConfig.code}
+          wordKey={langConfig.wordKey}
         />
       </SafeAreaView>
     );
