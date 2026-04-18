@@ -1,11 +1,12 @@
 import { useRef, useEffect, useState } from 'react'
+import { BookOpen, Zap, PenLine, Compass } from 'lucide-react'
 import './BottomNav.css'
 
 const TABS = [
-  { id: 'cards',    icon: '🃏', label: 'Kartlar'  },
-  { id: 'quiz',     icon: '⚡', label: 'Quiz'     },
-  { id: 'practice', icon: '✍️', label: 'Pratik'   },
-  { id: 'kesf',     icon: '🧭', label: 'Keşif'    },
+  { id: 'cards',    Icon: BookOpen, label: 'Kartlar'  },
+  { id: 'quiz',     Icon: Zap,      label: 'Quiz'     },
+  { id: 'practice', Icon: PenLine,  label: 'Pratik'   },
+  { id: 'kesf',     Icon: Compass,  label: 'Keşif'    },
 ]
 
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -70,7 +71,7 @@ export default function BottomNav({ activeTab, onTabChange, swipeFrac = null }) 
             className={`nav-tab ${activeTab === t.id ? 'active' : ''}`}
             onClick={() => onTabChange(t.id)}
           >
-            <span className="nav-tab-icon">{t.icon}</span>
+            <span className="nav-tab-icon"><t.Icon size={22} strokeWidth={1.5} /></span>
             <span>{t.label}</span>
           </button>
         ))}

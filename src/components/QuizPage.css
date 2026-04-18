@@ -184,6 +184,54 @@
   box-shadow: var(--shadow-primary);
 }
 
+.quiz-quick-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 20px 24px;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--r-xl);
+  cursor: pointer;
+  margin: 12px 0;
+}
+
+.qqs-label {
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.75);
+  font-weight: var(--fw-semi, 600);
+}
+
+.qqs-cta {
+  font-size: var(--text-lg);
+  color: #fff;
+  font-weight: var(--fw-bold, 800);
+  letter-spacing: -0.3px;
+}
+
+.quiz-settings-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  padding: 8px 0;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.quiz-settings-panel {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* ── Playing ─────────────────────────────────────────────────── */
 .quiz-play {
   display: flex;

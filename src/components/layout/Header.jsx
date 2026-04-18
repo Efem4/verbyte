@@ -1,3 +1,4 @@
+import { Flame, BarChart2, Sun, Moon } from 'lucide-react'
 import './Header.css'
 
 export default function Header({ langCode, streak, theme, onThemeToggle, onLogoClick, onProgressOpen }) {
@@ -10,12 +11,15 @@ export default function Header({ langCode, streak, theme, onThemeToggle, onLogoC
       <div className="header-right">
         {streak?.count > 0 && (
           <div className="header-streak">
-            🔥 <span>{streak.count}</span>
+            <Flame size={16} strokeWidth={1.5} />
+            <span>{streak.count}</span>
           </div>
         )}
-        <button className="header-icon-btn" onClick={onProgressOpen} title="İstatistikler">📊</button>
+        <button className="header-icon-btn" onClick={onProgressOpen} title="İstatistikler">
+          <BarChart2 size={20} strokeWidth={1.5} />
+        </button>
         <button className="header-icon-btn" onClick={onThemeToggle} title="Tema">
-          {theme === 'dark' ? '☀️' : '🌙'}
+          {theme === 'dark' ? <Sun size={20} strokeWidth={1.5} /> : <Moon size={20} strokeWidth={1.5} />}
         </button>
       </div>
     </header>

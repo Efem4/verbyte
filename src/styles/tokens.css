@@ -31,6 +31,13 @@
   --accent-gold:   #FBBF24;
   --accent-orange: #FB923C;
 
+  /* CEFR Level Colors — mauve lightness scale */
+  --level-a1: #C4B0CC;
+  --level-a2: #AA93BA;
+  --level-b1: #9076A8;
+  --level-b2: #765A96;
+  --level-c1: #5C3D84;
+
   /* Text — light'taki #2D1F2C koyu mavunun açık karşıtı */
   --text:       #EDE8F0;
   --text-muted: #8A7D92;
@@ -40,15 +47,22 @@
   --border:        rgba(196, 176, 204, 0.10);
   --border-strong: rgba(196, 176, 204, 0.20);
 
-  /* Typography (değişmez) */
-  --text-xs:   11px;
-  --text-sm:   13px;
+  /* Typography — 5 boyut + 3 ağırlık */
+  --text-sm:   12px;
   --text-base: 15px;
-  --text-md:   17px;
   --text-lg:   20px;
-  --text-xl:   28px;
-  --text-2xl:  36px;
+  --text-xl:   32px;
   --text-hero: 56px;
+
+  /* silinmişlerle uyum için alias'lar (geçiş dönemi) */
+  --text-xs:   var(--text-sm);
+  --text-md:   var(--text-base);
+  --text-2xl:  var(--text-xl);
+
+  /* Font weights */
+  --fw-normal: 400;
+  --fw-semi:   600;
+  --fw-bold:   800;
 
   /* Spacing (değişmez) */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
@@ -110,6 +124,13 @@
 
   --border:        rgba(130, 112, 129, 0.15);
   --border-strong: rgba(130, 112, 129, 0.28);
+
+  /* CEFR Level Colors — light bg'da okunabilir, daha koyu */
+  --level-a1: #9076A8;
+  --level-a2: #7D5F95;
+  --level-b1: #6A4882;
+  --level-b2: #57316F;
+  --level-c1: #441A5C;
 
   --shadow-md:      0 4px 16px rgba(80, 60, 80, 0.10);
   --shadow-lg:      0 8px 32px rgba(80, 60, 80, 0.15);

@@ -12,6 +12,14 @@ const QUESTION_COUNTS = [10, 20, null];
 const TIMER_SEC = 10;
 const REVEAL_DELAY = 1400;
 
+const QUIZ_PREFS_KEY = 'verbyte_quiz_prefs';
+
+function loadQuizPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(QUIZ_PREFS_KEY)) || {};
+  } catch { return {}; }
+}
+
 const CHOICE_COLORS = [
   { base: '#E53E3E', light: 'rgba(229,62,62,0.18)',  border: 'rgba(229,62,62,0.5)'  },
   { base: '#3182CE', light: 'rgba(49,130,206,0.18)',  border: 'rgba(49,130,206,0.5)'  },
@@ -83,9 +91,9 @@ export default function QuizPage({ langConfig, onStudy }) {
   const langLabel = wordKey.toUpperCase(); // 'FR' | 'EN' | 'DE'
 
   const [phase, setPhase] = useState('setup');
-  const [mode, setMode] = useState('classic');
-  const [direction, setDirection] = useState('tr-word');
-  const [questionCount, setQuestionCount] = useState(10);
+  const [mode, setMode] = useState(() => loadQuizPrefs().mode ?? 'classic');
+  const [direction, setDirection] = useState(() => loadQuizPrefs().direction ?? 'tr-word');
+  const [questionCount, setQuestionCount] = useState(() => loadQuizPrefs().questionCount ?? 10);
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -97,11 +105,13 @@ export default function QuizPage({ langConfig, onStudy }) {
   const [timeLeft, setTimeLeft] = useState(TIMER_SEC);
   const [totalTime, setTotalTime] = useState(0);
   const [floatingScores, setFloatingScores] = useState([]);
+  const [showSettings, setShowSettings] = useState(false);
   const timerRef = useRef(null);
   const revealRef = useRef(null);
   const handleAnswerRef = useRef(null);
 
   function startQuiz() {
+    localStorage.setItem(QUIZ_PREFS_KEY, JSON.stringify({ mode, direction, questionCount }));
     const qs = buildQuestions(vocabulary, wordKey, questionCount, direction);
     setQuestions(qs);
     setCurrent(0);
@@ -217,56 +227,69 @@ export default function QuizPage({ langConfig, onStudy }) {
         <h2 className="quiz-setup-title">Quiz</h2>
         <p className="quiz-setup-sub">{languageLabel} kelimelerini test et</p>
 
-        <div className="quiz-section-label">Mod</div>
-        <div className="quiz-mode-row">
-          <button
-            className={`quiz-mode-btn${mode === 'classic' ? ' active' : ''}`}
-            onClick={() => setMode('classic')}
-          >
-            <span className="qmode-icon">⏱</span>
-            <span className="qmode-name">Classic</span>
-            <span className="qmode-desc">10 sn, puan + hız bonusu</span>
-          </button>
-          <button
-            className={`quiz-mode-btn${mode === 'zen' ? ' active' : ''}`}
-            onClick={() => setMode('zen')}
-          >
-            <span className="qmode-icon">🧘</span>
-            <span className="qmode-name">Zen</span>
-            <span className="qmode-desc">Süresiz, sadece doğru/yanlış</span>
-          </button>
-        </div>
+        <button className="quiz-quick-start" onClick={startQuiz}>
+          <span className="qqs-label">
+            {mode === 'classic' ? 'Classic' : 'Zen'} · {questionCount ?? '∞'} soru · {direction === 'tr-word' ? 'TR → ' + langLabel : langLabel + ' → TR'}
+          </span>
+          <span className="qqs-cta">Başla →</span>
+        </button>
 
-        <div className="quiz-section-label">Yön</div>
-        <div className="quiz-mode-row">
-          <button
-            className={`quiz-mode-btn${direction === 'tr-word' ? ' active' : ''}`}
-            onClick={() => setDirection('tr-word')}
-          >
-            <span className="qmode-name">TR → {langLabel}</span>
-          </button>
-          <button
-            className={`quiz-mode-btn${direction === 'word-tr' ? ' active' : ''}`}
-            onClick={() => setDirection('word-tr')}
-          >
-            <span className="qmode-name">{langLabel} → TR</span>
-          </button>
-        </div>
+        <button className="quiz-settings-toggle" onClick={() => setShowSettings(v => !v)}>
+          {showSettings ? '▲ Gizle' : '⚙ Ayarları değiştir'}
+        </button>
 
-        <div className="quiz-section-label">Soru Sayısı</div>
-        <div className="quiz-count-row">
-          {QUESTION_COUNTS.map((c) => (
-            <button
-              key={c ?? 'inf'}
-              className={`quiz-count-btn${questionCount === c ? ' active' : ''}`}
-              onClick={() => setQuestionCount(c)}
-            >
-              {c ?? '∞'}
-            </button>
-          ))}
-        </div>
+        {showSettings && (
+          <div className="quiz-settings-panel">
+            <div className="quiz-section-label">Mod</div>
+            <div className="quiz-mode-row">
+              <button
+                className={`quiz-mode-btn${mode === 'classic' ? ' active' : ''}`}
+                onClick={() => setMode('classic')}
+              >
+                <span className="qmode-icon">⏱</span>
+                <span className="qmode-name">Classic</span>
+                <span className="qmode-desc">10 sn, puan + hız bonusu</span>
+              </button>
+              <button
+                className={`quiz-mode-btn${mode === 'zen' ? ' active' : ''}`}
+                onClick={() => setMode('zen')}
+              >
+                <span className="qmode-icon">🧘</span>
+                <span className="qmode-name">Zen</span>
+                <span className="qmode-desc">Süresiz, sadece doğru/yanlış</span>
+              </button>
+            </div>
 
-        <button className="quiz-start-btn" onClick={startQuiz}>Başla</button>
+            <div className="quiz-section-label">Yön</div>
+            <div className="quiz-mode-row">
+              <button
+                className={`quiz-mode-btn${direction === 'tr-word' ? ' active' : ''}`}
+                onClick={() => setDirection('tr-word')}
+              >
+                <span className="qmode-name">TR → {langLabel}</span>
+              </button>
+              <button
+                className={`quiz-mode-btn${direction === 'word-tr' ? ' active' : ''}`}
+                onClick={() => setDirection('word-tr')}
+              >
+                <span className="qmode-name">{langLabel} → TR</span>
+              </button>
+            </div>
+
+            <div className="quiz-section-label">Soru Sayısı</div>
+            <div className="quiz-count-row">
+              {QUESTION_COUNTS.map((c) => (
+                <button
+                  key={c ?? 'inf'}
+                  className={`quiz-count-btn${questionCount === c ? ' active' : ''}`}
+                  onClick={() => setQuestionCount(c)}
+                >
+                  {c ?? '∞'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

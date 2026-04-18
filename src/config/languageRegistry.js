@@ -7,11 +7,11 @@
 
 // ── Sabitler ─────────────────────────────────────────────────────────────────
 export const LEVEL_COLORS = {
-  A1: '#16A34A',
-  A2: '#2563EB',
-  B1: '#9333EA',
-  B2: '#DC2626',
-  C1: '#F59E0B',
+  A1: '#C4B0CC',   // --primary (light lavender)
+  A2: '#AA93BA',
+  B1: '#9076A8',
+  B2: '#765A96',
+  C1: '#5C3D84',
 };
 
 export const UNLOCK_THRESHOLD = 0.7;

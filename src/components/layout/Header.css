@@ -96,7 +96,6 @@
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
-  font-size: 17px;
   cursor: pointer;
   display: flex;
   align-items: center;

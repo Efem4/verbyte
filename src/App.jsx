@@ -454,53 +454,39 @@ export default function App() {
             <button className="sheet-close" onClick={() => setAchievementsOpen(false)}>✕</button>
 
             {/* ── Sabit istatistikler ── */}
-            <div className="psheet-stats">
-              <div className="psheet-streak">
-                {(() => {
-                  const tier = getStreakTier(streak.count);
-                  return (
-                    <>
-                      <span
-                        className="psheet-streak-num"
-                        style={{
-                          color: tier.color,
-                          textShadow: tier.glow !== 'none' ? `0 0 24px ${tier.glow}` : 'none',
-                        }}
-                      >
-                        {streak.count}
-                      </span>
-                      <span className="psheet-streak-label">🔥 günlük seri</span>
-                      <span className="psheet-streak-tier" style={{ color: tier.color }}>{tier.label}</span>
-                    </>
-                  );
-                })()}
-              </div>
-              <div className="psheet-divider" />
-              <div className="psheet-info">
-                <div className="psheet-info-row">
-                  <span className="psheet-info-val">{dailySession.totalCards ?? 0}</span>
-                  <span className="psheet-info-key">bugün kart</span>
+            {(() => {
+              const tier = getStreakTier(streak.count);
+              return (
+                <div className="psheet-stats-grid">
+                  <div className="psg-cell">
+                    <span className="psg-val" style={{ color: tier.color }}>{streak.count}</span>
+                    <span className="psg-key">gün serisi</span>
+                  </div>
+                  <div className="psg-cell">
+                    <span className="psg-val">{dailySession.totalCards ?? 0}</span>
+                    <span className="psg-key">bugün kart</span>
+                  </div>
+                  <div className="psg-cell">
+                    <span className="psg-val">{getTotals(progressByLang).totalWords}</span>
+                    <span className="psg-key">toplam kelime</span>
+                  </div>
                 </div>
-                <div className="psheet-info-row">
-                  <span className="psheet-info-val">{getTotals(progressByLang).totalWords}</span>
-                  <span className="psheet-info-key">toplam kelime</span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* ── Rozetler accordion ── */}
             <button className="psheet-acc-btn" onClick={() => setBadgesOpen((v) => !v)}>
-              <span>🏅 Rozetler</span>
+              <span>Rozetler</span>
               <span className="psheet-acc-count">{earned ? [...earned].length : 0}/{ACHIEVEMENTS.length}</span>
               <span className="psheet-acc-arrow">{badgesOpen ? '▲' : '›'}</span>
             </button>
             {badgesOpen && (
               <div className="psheet-acc-body">
                 {[
-                  { key: 'streak', label: '🔥 Seri' },
-                  { key: 'combo', label: '⚡ Combo' },
-                  { key: 'words', label: '📚 Kelime' },
-                  { key: 'mastery', label: '⭐ Ustalık' },
+                  { key: 'streak', label: 'Seri' },
+                  { key: 'combo', label: 'Combo' },
+                  { key: 'words', label: 'Kelime' },
+                  { key: 'mastery', label: 'Ustalık' },
                 ].map(({ key, label }) => (
                   <div key={key} className="achievement-group">
                     <div className="achievement-group-label">{label}</div>
@@ -509,7 +495,7 @@ export default function App() {
                         const unlocked = earned?.has(a.id);
                         return (
                           <div key={a.id} className={`achievement-card${unlocked ? ' unlocked' : ''}`}>
-                            <span className="achievement-icon">{unlocked ? a.icon : '🔒'}</span>
+                            <span className="achievement-icon">{unlocked ? a.icon : '—'}</span>
                             <span className="achievement-name">{a.label}</span>
                             <span className="achievement-desc">{a.desc}</span>
                           </div>
@@ -523,7 +509,7 @@ export default function App() {
 
             {/* ── Detaylı istatistik accordion ── */}
             <button className="psheet-acc-btn" onClick={() => setStatsOpen((v) => !v)}>
-              <span>📊 Detaylı İstatistik</span>
+              <span>Detaylı İstatistik</span>
               <span className="psheet-acc-arrow">{statsOpen ? '▲' : '›'}</span>
             </button>
             {statsOpen && (
