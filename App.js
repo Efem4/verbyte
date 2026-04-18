@@ -1,20 +1,48 @@
+import 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
+
+import CardsScreen    from './src/screens/CardsScreen';
+import QuizScreen     from './src/screens/QuizScreen';
+import PracticeScreen from './src/screens/PracticeScreen';
+import ExploreScreen  from './src/screens/ExploreScreen';
+
+const Tab = createBottomTabNavigator();
+
+const ICONS = { Kartlar: '📖', Quiz: '⚡', Pratik: '✏️', 'Keşif': '🧭' };
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.45 }}>
+                {ICONS[route.name]}
+              </Text>
+            ),
+            tabBarActiveTintColor: '#818CF8',
+            tabBarInactiveTintColor: '#666',
+            tabBarStyle: {
+              backgroundColor: '#0C0B1F',
+              borderTopColor: '#1e1d3a',
+              paddingBottom: 4,
+              height: 62,
+            },
+          })}
+        >
+          <Tab.Screen name="Kartlar"  component={CardsScreen} />
+          <Tab.Screen name="Quiz"     component={QuizScreen} />
+          <Tab.Screen name="Pratik"   component={PracticeScreen} />
+          <Tab.Screen name="Keşif"   component={ExploreScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
