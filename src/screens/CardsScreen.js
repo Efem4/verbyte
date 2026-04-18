@@ -10,9 +10,11 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import { Audio } from 'expo-av';
 import { COLORS, LEVEL_COLORS } from '../utils/colors';
 import { buildSmartQueue, updateEntry, getDueCount, getMasteredCount } from '../utils/srs';
 import storage from '../utils/storage';
+import { getAudioUrl } from '../utils/audioConfig';
 
 // ─── Veri ────────────────────────────────────────────────────────────────────
 const DATA = {
@@ -46,6 +48,7 @@ function Flashcard({ word, onKnow, onSkip, combo }) {
   const [flipped, setFlipped] = useState(false);
   const flipAnim  = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const soundRef  = useRef(null);
 
   // Yeni kart geldiğinde ön yüze sıfırla
   useEffect(() => {
@@ -53,6 +56,34 @@ function Flashcard({ word, onKnow, onSkip, combo }) {
     flipAnim.setValue(0);
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
   }, [word?.id]);
+
+  // Yeni kart geldiğinde sesi çal
+  useEffect(() => {
+    if (!word?.id) return;
+    let sound;
+    const url = getAudioUrl('fr', word.id);
+    Audio.Sound.createAsync({ uri: url })
+      .then(({ sound: s }) => {
+        sound = s;
+        soundRef.current = s;
+        s.playAsync().catch(() => {});
+      })
+      .catch(() => {});
+    return () => { sound?.unloadAsync().catch(() => {}); };
+  }, [word?.id]);
+
+  const playSound = () => {
+    if (!word?.id) return;
+    const url = getAudioUrl('fr', word.id);
+    Audio.Sound.createAsync({ uri: url })
+      .then(({ sound: s }) => {
+        s.playAsync().catch(() => {});
+        s.setOnPlaybackStatusUpdate(status => {
+          if (status.didJustFinish) s.unloadAsync().catch(() => {});
+        });
+      })
+      .catch(() => {});
+  };
 
   const frontRotate = flipAnim.interpolate({
     inputRange:  [0, 1],
@@ -107,6 +138,13 @@ function Flashcard({ word, onKnow, onSkip, combo }) {
             <Text style={fc.catLabel}>{capitalize(word.cat)}</Text>
             <Text style={fc.wordText}>{word.word}</Text>
             <Text style={fc.tapHint}>Çevirmek için dokun</Text>
+            <TouchableOpacity
+              style={fc.soundBtn}
+              onPress={e => { e.stopPropagation?.(); playSound(); }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={fc.soundBtnIcon}>🔊</Text>
+            </TouchableOpacity>
           </Animated.View>
 
           {/* Arka yüz */}
@@ -202,6 +240,15 @@ const fc = StyleSheet.create({
     bottom: 16,
     fontSize: 12,
     color: COLORS.muted,
+  },
+  soundBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    padding: 8,
+  },
+  soundBtnIcon: {
+    fontSize: 18,
   },
   trText: {
     fontSize: 30,

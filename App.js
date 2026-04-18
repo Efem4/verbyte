@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
+import { ThemeProvider } from './src/utils/ThemeContext';
 
 import CardsScreen    from './src/screens/CardsScreen';
 import QuizScreen     from './src/screens/QuizScreen';
@@ -18,6 +19,7 @@ const ICONS = { Kartlar: '📖', Quiz: '⚡', Pratik: '✏️', 'Keşif': '🧭'
 export default function App() {
   return (
     <SafeAreaProvider>
+      <ThemeProvider>
       <StatusBar style="light" />
       <NavigationContainer>
         <Tab.Navigator
@@ -45,6 +47,7 @@ export default function App() {
           <Tab.Screen name="İlerleme" component={ProgressScreen} />
         </Tab.Navigator>
       </NavigationContainer>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
