@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  StatusBar,
   Animated,
   Dimensions,
 } from 'react-native';
 import { Audio } from 'expo-av';
-import { COLORS, LEVEL_COLORS } from '../utils/colors';
+import { useTheme } from '../utils/ThemeContext';
+import { type, spacing, radius, shadows, colors as TOKEN_COLORS } from '../tokens/verbyte.tokens';
+import { LEVEL_COLORS } from '../config/languageRegistry';
 import { buildSmartQueue, updateEntry, getDueCount, getMasteredCount } from '../utils/srs';
 import storage from '../utils/storage';
 import { getAudioUrl } from '../utils/audioConfig';
@@ -19,30 +20,26 @@ import { getAudioUrl } from '../utils/audioConfig';
 // ─── Sabitler ────────────────────────────────────────────────────────────────
 const LEVELS    = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const NEW_LIMIT = 5;
+const { width } = Dimensions.get('window');
 
-// ─── Yardımcılar ─────────────────────────────────────────────────────────────
 function capitalize(str) {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
 }
 
-// ─── Dahili Flashcard komponenti ─────────────────────────────────────────────
-const { width } = Dimensions.get('window');
-
+// ─── Flashcard ────────────────────────────────────────────────────────────────
 function Flashcard({ word, onKnow, onSkip, combo, langCode, wordKey }) {
+  const { c } = useTheme();
   const [flipped, setFlipped] = useState(false);
   const flipAnim  = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const soundRef  = useRef(null);
 
-  // Yeni kart geldiğinde ön yüze sıfırla
   useEffect(() => {
     setFlipped(false);
     flipAnim.setValue(0);
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
   }, [word?.id]);
 
-  // Yeni kart geldiğinde sesi çal
   useEffect(() => {
     if (!word?.id) return;
     let sound;
@@ -50,7 +47,6 @@ function Flashcard({ word, onKnow, onSkip, combo, langCode, wordKey }) {
     Audio.Sound.createAsync({ uri: url })
       .then(({ sound: s }) => {
         sound = s;
-        soundRef.current = s;
         s.playAsync().catch(() => {});
       })
       .catch(() => {});
@@ -59,32 +55,23 @@ function Flashcard({ word, onKnow, onSkip, combo, langCode, wordKey }) {
 
   const playSound = () => {
     if (!word?.id) return;
-    const url = getAudioUrl(langCode, word.id);
-    Audio.Sound.createAsync({ uri: url })
+    Audio.Sound.createAsync({ uri: getAudioUrl(langCode, word.id) })
       .then(({ sound: s }) => {
         s.playAsync().catch(() => {});
-        s.setOnPlaybackStatusUpdate(status => {
-          if (status.didJustFinish) s.unloadAsync().catch(() => {});
+        s.setOnPlaybackStatusUpdate(st => {
+          if (st.didJustFinish) s.unloadAsync().catch(() => {});
         });
       })
       .catch(() => {});
   };
 
-  const frontRotate = flipAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-  const backRotate = flipAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: ['180deg', '360deg'],
-  });
+  const frontRotate = flipAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
+  const backRotate  = flipAnim.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
 
   const handleFlip = () => {
     Animated.spring(flipAnim, {
-      toValue:  flipped ? 0 : 1,
-      friction: 8,
-      tension:  10,
-      useNativeDriver: true,
+      toValue: flipped ? 0 : 1,
+      friction: 8, tension: 10, useNativeDriver: true,
     }).start();
     setFlipped(f => !f);
   };
@@ -108,8 +95,8 @@ function Flashcard({ word, onKnow, onSkip, combo, langCode, wordKey }) {
   return (
     <View style={fc.wrapper}>
       {combo > 1 && (
-        <View style={fc.comboBadge}>
-          <Text style={fc.comboText}>🔥 {combo} combo</Text>
+        <View style={[fc.comboBadge, { backgroundColor: c.warnTint, borderColor: c.warnBorder }]}>
+          <Text style={[fc.comboText, { color: c.warn }]}>🔥 {combo} combo</Text>
         </View>
       )}
 
@@ -117,43 +104,69 @@ function Flashcard({ word, onKnow, onSkip, combo, langCode, wordKey }) {
         <Animated.View style={[fc.card, { transform: [{ scale: scaleAnim }] }]}>
           {/* Ön yüz */}
           <Animated.View
-            style={[fc.face, fc.front, { transform: [{ rotateY: frontRotate }] }]}
+            style={[
+              fc.face,
+              { backgroundColor: c.panel, borderColor: c.panelBorder, ...shadows.card },
+              { transform: [{ rotateY: frontRotate }] },
+            ]}
             pointerEvents={flipped ? 'none' : 'auto'}
           >
-            <Text style={fc.catLabel}>{capitalize(word.cat)}</Text>
-            <Text style={fc.wordText}>{word[wordKey]}</Text>
-            <Text style={fc.tapHint}>Çevirmek için dokun</Text>
+            <Text style={[type.monoLabel, { color: c.textDim, position: 'absolute', top: 16, left: 20 }]}>
+              {capitalize(word.cat)}
+            </Text>
+            <Text style={[type.word, { color: c.text, textAlign: 'center' }]}>
+              {word[wordKey]}
+            </Text>
+            <Text style={[type.caption, { color: c.textFaint, position: 'absolute', bottom: 16 }]}>
+              Çevirmek için dokun
+            </Text>
             <TouchableOpacity
               style={fc.soundBtn}
               onPress={e => { e.stopPropagation?.(); playSound(); }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={fc.soundBtnIcon}>🔊</Text>
+              <Text style={{ fontSize: 18 }}>🔊</Text>
             </TouchableOpacity>
           </Animated.View>
 
           {/* Arka yüz */}
           <Animated.View
-            style={[fc.face, fc.back, { transform: [{ rotateY: backRotate }] }]}
+            style={[
+              fc.face,
+              { backgroundColor: c.panel, borderColor: c.accentBorder, ...shadows.card },
+              { transform: [{ rotateY: backRotate }] },
+            ]}
             pointerEvents={flipped ? 'auto' : 'none'}
           >
-            <Text style={fc.catLabel}>{capitalize(word.cat)}</Text>
-            <Text style={fc.trText}>{word.tr}</Text>
+            <Text style={[type.monoLabel, { color: c.textDim, position: 'absolute', top: 16, left: 20 }]}>
+              {capitalize(word.cat)}
+            </Text>
+            <Text style={[type.h1, { color: c.accent, textAlign: 'center', marginBottom: 8 }]}>
+              {word.tr}
+            </Text>
             {!!word.example && (
-              <Text style={fc.exampleText}>"{word.example}"</Text>
+              <Text style={[type.body, { color: c.textMuted, textAlign: 'center', fontStyle: 'italic', marginTop: 8, lineHeight: 20 }]}>
+                "{word.example}"
+              </Text>
             )}
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>
 
       <View style={fc.btnRow}>
-        <TouchableOpacity style={[fc.btn, fc.skipBtn]} onPress={handleSkip}>
-          <Text style={fc.btnIcon}>✕</Text>
-          <Text style={fc.btnLabel}>Bilmiyorum</Text>
+        <TouchableOpacity
+          style={[fc.btn, { backgroundColor: c.dangerTint, borderColor: c.dangerBorder }]}
+          onPress={handleSkip}
+        >
+          <Text style={{ fontSize: 22, marginBottom: 2 }}>✕</Text>
+          <Text style={[type.small, { color: c.textMuted, fontWeight: '600' }]}>Bilmiyorum</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[fc.btn, fc.knowBtn]} onPress={handleKnow}>
-          <Text style={fc.btnIcon}>✓</Text>
-          <Text style={fc.btnLabel}>Bildim</Text>
+        <TouchableOpacity
+          style={[fc.btn, { backgroundColor: c.successTint, borderColor: c.successBorder }]}
+          onPress={handleKnow}
+        >
+          <Text style={{ fontSize: 22, marginBottom: 2 }}>✓</Text>
+          <Text style={[type.small, { color: c.textMuted, fontWeight: '600' }]}>Bildim</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -165,66 +178,32 @@ const fc = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.gutter,
   },
   comboBadge: {
-    backgroundColor: 'rgba(251,191,36,0.15)',
-    borderRadius: 20,
+    borderRadius: radius.pill,
     paddingHorizontal: 14,
     paddingVertical: 6,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(251,191,36,0.3)',
   },
   comboText: {
-    color: '#FBBF24',
-    fontWeight: '700',
-    fontSize: 14,
+    ...type.button,
   },
   card: {
-    width: width - 40,
+    width: width - spacing.gutter * 2,
     height: 260,
   },
   face: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    borderRadius: 20,
+    borderRadius: radius.r3xl,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
     backfaceVisibility: 'hidden',
     borderWidth: 1,
-  },
-  front: {
-    backgroundColor: COLORS.surface2,
-    borderColor: COLORS.borderStrong,
-  },
-  back: {
-    backgroundColor: COLORS.surface,
-    borderColor: COLORS.primary,
-  },
-  catLabel: {
-    position: 'absolute',
-    top: 16,
-    left: 20,
-    fontSize: 11,
-    color: COLORS.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: '600',
-  },
-  wordText: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  tapHint: {
-    position: 'absolute',
-    bottom: 16,
-    fontSize: 12,
-    color: COLORS.muted,
   },
   soundBtn: {
     position: 'absolute',
@@ -232,93 +211,48 @@ const fc = StyleSheet.create({
     right: 12,
     padding: 8,
   },
-  soundBtnIcon: {
-    fontSize: 18,
-  },
-  trText: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  exampleText: {
-    fontSize: 13,
-    color: COLORS.muted,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    marginTop: 8,
-    lineHeight: 19,
-  },
   btnRow: {
     flexDirection: 'row',
     gap: 16,
     marginTop: 32,
+    width: width - spacing.gutter * 2,
   },
   btn: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: radius.lg,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 1,
-  },
-  skipBtn: {
-    backgroundColor: 'rgba(248,113,113,0.10)',
-    borderColor:     'rgba(248,113,113,0.35)',
-  },
-  knowBtn: {
-    backgroundColor: 'rgba(52,211,153,0.10)',
-    borderColor:     'rgba(52,211,153,0.35)',
-  },
-  btnIcon: {
-    fontSize: 22,
-    marginBottom: 2,
-    color: COLORS.text,
-  },
-  btnLabel: {
-    fontSize: 12,
-    color: COLORS.muted,
-    fontWeight: '600',
   },
 });
 
 // ─── Ana Ekran ────────────────────────────────────────────────────────────────
 export default function CardsScreen({ langConfig }) {
-  // Phase yönetimi
-  const [phase, setPhase]             = useState('browse');   // 'browse' | 'studying' | 'done'
+  const { c } = useTheme();
+  const [phase, setPhase]             = useState('browse');
   const [activeLevel, setActiveLevel] = useState('A1');
-  const [progress, setProgress]       = useState({});         // progress kayıtları
-
-  // Studying state
+  const [progress, setProgress]       = useState({});
   const [activeCat, setActiveCat]     = useState(null);
-  const [queue, setQueue]             = useState([]);          // word index dizisi
+  const [queue, setQueue]             = useState([]);
   const [queuePos, setQueuePos]       = useState(0);
   const [knowCount, setKnowCount]     = useState(0);
   const [skipCount, setSkipCount]     = useState(0);
   const [combo, setCombo]             = useState(0);
 
-  // ── İlk yükleme ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!langConfig?.progressKey) return;
-    (async () => {
-      const saved = await storage.getJSON(langConfig.progressKey, {});
-      setProgress(saved);
-    })();
+    storage.getJSON(langConfig.progressKey, {}).then(setProgress);
   }, [langConfig?.progressKey]);
 
-  // ── Progress kaydet ──────────────────────────────────────────────────────
   const saveProgress = useCallback(async (newProg) => {
     setProgress(newProg);
     await storage.setJSON(langConfig.progressKey, newProg);
   }, [langConfig?.progressKey]);
 
-  // ── Kategori başlat ─────────────────────────────────────────────────────
   const startCategory = useCallback((catId) => {
-    const vocabulary = langConfig?.vocabulary ?? {};
-    const words = vocabulary[catId] ?? [];
+    const words = langConfig?.vocabulary?.[catId] ?? [];
     if (!words.length) return;
-    const catProgress = progress[catId] ?? {};
-    const q = buildSmartQueue(words, langConfig.wordKey, catProgress, NEW_LIMIT);
+    const q = buildSmartQueue(words, langConfig.wordKey, progress[catId] ?? {}, NEW_LIMIT);
     setActiveCat(catId);
     setQueue(q);
     setQueuePos(0);
@@ -328,58 +262,40 @@ export default function CardsScreen({ langConfig }) {
     setPhase('studying');
   }, [langConfig, progress]);
 
-  // ── Mevcut kelime ────────────────────────────────────────────────────────
-  const vocabulary    = langConfig?.vocabulary ?? {};
-  const currentWords  = activeCat ? (vocabulary[activeCat] ?? []) : [];
-  const currentWord   = queue.length > 0 ? currentWords[queue[queuePos]] : null;
+  const vocabulary   = langConfig?.vocabulary ?? {};
+  const currentWords = activeCat ? (vocabulary[activeCat] ?? []) : [];
+  const currentWord  = queue.length > 0 ? currentWords[queue[queuePos]] : null;
 
-  // ── İleri git ────────────────────────────────────────────────────────────
   const advance = useCallback((currentQueue) => {
     setQueuePos(pos => {
       const next = pos + 1;
-      if (next >= currentQueue.length) {
-        setPhase('done');
-        return pos;
-      }
+      if (next >= currentQueue.length) { setPhase('done'); return pos; }
       return next;
     });
   }, []);
 
-  // ── Know ─────────────────────────────────────────────────────────────────
   const handleKnow = useCallback(async () => {
     if (!currentWord || !activeCat) return;
-    const wordKey = langConfig?.wordKey ?? 'id';
-    const catProgress = progress[activeCat] ?? {};
-    const entry   = catProgress[currentWord[wordKey]];
-    const updated = updateEntry(entry, true);
-    const newProg = {
-      ...progress,
-      [activeCat]: { ...catProgress, [currentWord[wordKey]]: updated },
-    };
+    const wk = langConfig?.wordKey ?? 'id';
+    const catProg = progress[activeCat] ?? {};
+    const newProg = { ...progress, [activeCat]: { ...catProg, [currentWord[wk]]: updateEntry(catProg[currentWord[wk]], true) } };
     await saveProgress(newProg);
     setKnowCount(c => c + 1);
     setCombo(c => c + 1);
     advance(queue);
-  }, [currentWord, activeCat, progress, saveProgress, queue, advance]);
+  }, [currentWord, activeCat, progress, saveProgress, queue, advance, langConfig]);
 
-  // ── Skip ─────────────────────────────────────────────────────────────────
   const handleSkip = useCallback(async () => {
     if (!currentWord || !activeCat) return;
-    const wordKey = langConfig?.wordKey ?? 'id';
-    const catProgress = progress[activeCat] ?? {};
-    const entry   = catProgress[currentWord[wordKey]];
-    const updated = updateEntry(entry, false);
-    const newProg = {
-      ...progress,
-      [activeCat]: { ...catProgress, [currentWord[wordKey]]: updated },
-    };
+    const wk = langConfig?.wordKey ?? 'id';
+    const catProg = progress[activeCat] ?? {};
+    const newProg = { ...progress, [activeCat]: { ...catProg, [currentWord[wk]]: updateEntry(catProg[currentWord[wk]], false) } };
     await saveProgress(newProg);
     setSkipCount(c => c + 1);
     setCombo(0);
     advance(queue);
-  }, [currentWord, activeCat, progress, saveProgress, queue, advance]);
+  }, [currentWord, activeCat, progress, saveProgress, queue, advance, langConfig]);
 
-  // ── Kategori istatistikleri ──────────────────────────────────────────────
   const getCatStats = useCallback((catId, words) => {
     const catProg = progress[catId] ?? {};
     return {
@@ -389,75 +305,64 @@ export default function CardsScreen({ langConfig }) {
     };
   }, [progress, langConfig?.wordKey]);
 
-  // ── langConfig yoksa loading göster ─────────────────────────────────────
-  if (!langConfig || !langConfig.vocabulary) {
+  if (!langConfig?.vocabulary) {
     return (
-      <SafeAreaView style={s.safe}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: COLORS.muted, fontSize: 15 }}>Yükleniyor...</Text>
+          <Text style={[type.body, { color: c.textMuted }]}>Yükleniyor...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // PHASE: browse
-  // ════════════════════════════════════════════════════════════════════════════
+  // ── BROWSE ───────────────────────────────────────────────────────────────────
   if (phase === 'browse') {
-    // langConfig.vocabulary zaten catId → [words] formatında gruplanmış
-    // langConfig.categories → [{ id, label, emoji, level }]
-    // Aktif seviyeye göre kategorileri filtrele
     const levelCatIds = (langConfig.categories ?? [])
-      .filter(c => c.level === activeLevel || !c.level)
-      .map(c => c.id);
+      .filter(cat => cat.level === activeLevel || !cat.level)
+      .map(cat => cat.id);
 
-    // vocabulary'den sadece bu level'a ait kategorileri al
-    // level bilgisi yoksa tüm vocabulary'yi göster
     const levelCats = levelCatIds.length > 0
-      ? Object.fromEntries(
-          levelCatIds
-            .filter(id => langConfig.vocabulary[id])
-            .map(id => [id, langConfig.vocabulary[id]])
-        )
-      : langConfig.vocabulary;
+      ? Object.fromEntries(levelCatIds.filter(id => vocabulary[id]).map(id => [id, vocabulary[id]]))
+      : vocabulary;
 
     return (
-      <SafeAreaView style={s.safe}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
-
-        {/* Başlık */}
-        <View style={s.header}>
-          <Text style={s.headerTitle}>Kartlar</Text>
-          <Text style={s.headerSub}>{langConfig.languageLabel} kelime çalış</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
+        {/* Header */}
+        <View style={[s.header, { borderBottomColor: c.hairline }]}>
+          <View>
+            <Text style={[type.h1, { color: c.text }]}>Kartlar</Text>
+            <Text style={[type.caption, { color: c.textMuted, marginTop: 2 }]}>
+              {langConfig.languageLabel} kelime çalış
+            </Text>
+          </View>
         </View>
 
-        {/* Level pill navigator */}
+        {/* Level pills */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={s.pillRow}
+          contentContainerStyle={[s.pillRow, { gap: spacing.sm }]}
         >
           {LEVELS.map(lvl => {
             const isActive   = lvl === activeLevel;
-            const isUnlocked = langConfig.loadedLevels
-              ? langConfig.loadedLevels.has(lvl)
-              : lvl === 'A1';
+            const isUnlocked = langConfig.loadedLevels?.has(lvl) ?? lvl === 'A1';
+            const lvlColor   = (langConfig.levelColors ?? LEVEL_COLORS)[lvl];
             return (
               <TouchableOpacity
                 key={lvl}
                 style={[
                   s.pill,
-                  isActive   && { backgroundColor: (langConfig.levelColors ?? LEVEL_COLORS)[lvl] },
-                  !isUnlocked && s.pillLocked,
+                  { backgroundColor: c.panel, borderColor: c.panelBorder },
+                  isActive   && { backgroundColor: lvlColor, borderColor: lvlColor },
+                  !isUnlocked && { opacity: 0.4 },
                 ]}
                 onPress={() => isUnlocked && setActiveLevel(lvl)}
                 activeOpacity={isUnlocked ? 0.7 : 1}
               >
-                <Text style={[s.pillText, isActive && s.pillTextActive]}>
+                <Text style={[type.mono, { color: isActive ? '#1a0a2e' : c.textMuted, fontWeight: '700' }]}>
                   {lvl}
                 </Text>
-                {!isUnlocked && <Text style={s.lockIcon}>🔒</Text>}
+                {!isUnlocked && <Text style={{ fontSize: 10 }}>🔒</Text>}
               </TouchableOpacity>
             );
           })}
@@ -465,47 +370,39 @@ export default function CardsScreen({ langConfig }) {
 
         {/* Kategori listesi */}
         <ScrollView
-          style={s.catList}
-          contentContainerStyle={s.catListContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={[s.catListContent, { gap: spacing.blockGap }]}
           showsVerticalScrollIndicator={false}
         >
           {Object.entries(levelCats).map(([catId, words]) => {
             const { total, known, due } = getCatStats(catId, words);
-            const pct = total > 0 ? known / total : 0;
-            const catMeta = (langConfig.categories ?? []).find(c => c.id === catId);
-            const catLabel = catMeta
+            const pct     = total > 0 ? known / total : 0;
+            const catMeta = (langConfig.categories ?? []).find(cat => cat.id === catId);
+            const label   = catMeta
               ? `${catMeta.emoji ?? ''} ${catMeta.label ?? capitalize(catId)}`.trim()
               : capitalize(catId);
-            const levelColor = (langConfig.levelColors ?? LEVEL_COLORS)[activeLevel];
+            const lvlColor = (langConfig.levelColors ?? LEVEL_COLORS)[activeLevel];
 
             return (
               <TouchableOpacity
                 key={catId}
-                style={s.catCard}
+                style={[s.catCard, { backgroundColor: c.panel, borderColor: c.panelBorder }]}
                 onPress={() => startCategory(catId)}
                 activeOpacity={0.75}
               >
                 <View style={s.catCardTop}>
-                  <Text style={s.catName}>{catLabel}</Text>
-                  <View style={s.catRight}>
+                  <Text style={[type.bodyMd, { color: c.text, flex: 1 }]}>{label}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     {due > 0 && (
-                      <View style={s.dueBadge}>
-                        <Text style={s.dueBadgeText}>tekrar {due}</Text>
+                      <View style={[s.dueBadge, { backgroundColor: c.accentTint, borderColor: c.accentBorder }]}>
+                        <Text style={[type.small, { color: c.accent, fontWeight: '600' }]}>tekrar {due}</Text>
                       </View>
                     )}
-                    <Text style={s.catCount}>{known}/{total}</Text>
+                    <Text style={[type.caption, { color: c.textMuted }]}>{known}/{total}</Text>
                   </View>
                 </View>
-                <View style={s.progressBg}>
-                  <View
-                    style={[
-                      s.progressFill,
-                      {
-                        width: `${Math.round(pct * 100)}%`,
-                        backgroundColor: levelColor,
-                      },
-                    ]}
-                  />
+                <View style={[s.progressBg, { backgroundColor: c.barTrack }]}>
+                  <View style={[s.progressFill, { width: `${Math.round(pct * 100)}%`, backgroundColor: lvlColor }]} />
                 </View>
               </TouchableOpacity>
             );
@@ -515,40 +412,33 @@ export default function CardsScreen({ langConfig }) {
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // PHASE: studying
-  // ════════════════════════════════════════════════════════════════════════════
+  // ── STUDYING ─────────────────────────────────────────────────────────────────
   if (phase === 'studying') {
     const total   = queue.length;
     const current = queuePos + 1;
+    const pctBar  = Math.round((queuePos / Math.max(total, 1)) * 100);
 
     return (
-      <SafeAreaView style={s.safe}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
-
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
         {/* Header */}
         <View style={s.studyHeader}>
           <TouchableOpacity
-            style={s.backBtn}
             onPress={() => setPhase('browse')}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={s.backBtnText}>‹ Geri</Text>
+            <Text style={[type.bodyMd, { color: c.accent }]}>‹ Geri</Text>
           </TouchableOpacity>
-          <Text style={s.studyCatName} numberOfLines={1}>
+          <Text style={[type.h3, { color: c.text, flex: 1, textAlign: 'center' }]} numberOfLines={1}>
             {capitalize(activeCat)}
           </Text>
-          <Text style={s.studyProgress}>{current}/{total}</Text>
+          <Text style={[type.caption, { color: c.textMuted, minWidth: 36, textAlign: 'right' }]}>
+            {current}/{total}
+          </Text>
         </View>
 
-        {/* İlerleme şeridi */}
-        <View style={s.studyBar}>
-          <View
-            style={[
-              s.studyBarFill,
-              { width: `${Math.round((queuePos / Math.max(total, 1)) * 100)}%` },
-            ]}
-          />
+        {/* Progress bar */}
+        <View style={[s.studyBar, { backgroundColor: c.barTrack }]}>
+          <View style={[s.studyBarFill, { width: `${pctBar}%`, backgroundColor: c.accent }]} />
         </View>
 
         <Flashcard
@@ -563,46 +453,44 @@ export default function CardsScreen({ langConfig }) {
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // PHASE: done
-  // ════════════════════════════════════════════════════════════════════════════
+  // ── DONE ─────────────────────────────────────────────────────────────────────
   if (phase === 'done') {
     const allKnown = skipCount === 0 && knowCount > 0;
 
     return (
-      <SafeAreaView style={s.safe}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
-
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
         <View style={s.doneWrap}>
-          <Text style={s.doneEmoji}>{allKnown ? '🎉' : '💪'}</Text>
-          <Text style={s.doneTitle}>{allKnown ? 'Harika!' : 'Devam et!'}</Text>
-          <Text style={s.doneSub}>
+          <Text style={{ fontSize: 64, marginBottom: 16 }}>{allKnown ? '🎉' : '💪'}</Text>
+          <Text style={[type.h1, { color: c.text, marginBottom: 6 }]}>
+            {allKnown ? 'Harika!' : 'Devam et!'}
+          </Text>
+          <Text style={[type.body, { color: c.textMuted, marginBottom: 32 }]}>
             {capitalize(activeCat)} · {knowCount + skipCount} kart
           </Text>
 
-          <View style={s.doneStats}>
-            <View style={[s.statBox, s.statBoxGreen]}>
-              <Text style={[s.statNum, { color: COLORS.green }]}>{knowCount}</Text>
-              <Text style={s.statLabel}>Bildim</Text>
+          <View style={{ flexDirection: 'row', gap: 16, marginBottom: 36, width: '100%' }}>
+            <View style={[s.statBox, { backgroundColor: c.successTint, borderColor: c.successBorder }]}>
+              <Text style={[type.display, { color: c.success, marginBottom: 4 }]}>{knowCount}</Text>
+              <Text style={[type.caption, { color: c.textMuted, fontWeight: '600' }]}>Bildim</Text>
             </View>
-            <View style={[s.statBox, s.statBoxRed]}>
-              <Text style={[s.statNum, { color: COLORS.red }]}>{skipCount}</Text>
-              <Text style={s.statLabel}>Bilmedim</Text>
+            <View style={[s.statBox, { backgroundColor: c.dangerTint, borderColor: c.dangerBorder }]}>
+              <Text style={[type.display, { color: c.danger, marginBottom: 4 }]}>{skipCount}</Text>
+              <Text style={[type.caption, { color: c.textMuted, fontWeight: '600' }]}>Bilmedim</Text>
             </View>
           </View>
 
           <TouchableOpacity
-            style={s.primaryBtn}
+            style={[s.primaryBtn, { backgroundColor: c.primaryBtnBg }]}
             onPress={() => startCategory(activeCat)}
           >
-            <Text style={s.primaryBtnText}>Tekrar Çalış</Text>
+            <Text style={[type.button, { color: c.primaryBtnText }]}>Tekrar Çalış</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={s.secondaryBtn}
+            style={[s.secondaryBtn, { borderColor: c.panelBorder }]}
             onPress={() => setPhase('browse')}
           >
-            <Text style={s.secondaryBtnText}>Kategorilere Dön</Text>
+            <Text style={[type.bodyMd, { color: c.textMuted }]}>Kategorilere Dön</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -612,248 +500,106 @@ export default function CardsScreen({ langConfig }) {
   return null;
 }
 
-// ─── Stiller ──────────────────────────────────────────────────────────────────
+// ─── Layout-only stiller (renk yok) ──────────────────────────────────────────
 const s = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
-
-  // Browse — header
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingHorizontal: spacing.gutter,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.xl,
+    borderBottomWidth: 1,
   },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  headerSub: {
-    fontSize: 13,
-    color: COLORS.muted,
-    marginTop: 2,
-  },
-
-  // Browse — level pills
   pillRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.md,
     flexDirection: 'row',
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface2,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  pillLocked: {
-    opacity: 0.45,
-  },
-  pillText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.muted,
-  },
-  pillTextActive: {
-    color: '#1a0a2e',
-  },
-  lockIcon: {
-    fontSize: 10,
-  },
-
-  // Browse — kategori listesi
-  catList: {
-    flex: 1,
   },
   catListContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingHorizontal: spacing.gutter,
+    paddingTop: spacing.md,
     paddingBottom: 32,
-    gap: 10,
   },
   catCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   catCardTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  catName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text,
-    flex: 1,
-  },
-  catRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    marginBottom: spacing.xl,
   },
   dueBadge: {
-    backgroundColor: 'rgba(129,140,248,0.15)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
+    borderRadius: radius.xs,
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: 'rgba(129,140,248,0.3)',
-  },
-  dueBadgeText: {
-    fontSize: 11,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  catCount: {
-    fontSize: 13,
-    color: COLORS.muted,
-    fontWeight: '500',
   },
   progressBg: {
-    height: 5,
-    backgroundColor: COLORS.surface2,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2,
     minWidth: 4,
   },
-
-  // Studying — header
   studyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 10,
-  },
-  backBtn: {
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  backBtnText: {
-    fontSize: 16,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  studyCatName: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  studyProgress: {
-    fontSize: 13,
-    color: COLORS.muted,
-    fontWeight: '600',
-    minWidth: 36,
-    textAlign: 'right',
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.xl,
+    gap: spacing.md,
   },
   studyBar: {
     height: 3,
-    backgroundColor: COLORS.surface2,
-    marginHorizontal: 16,
+    marginHorizontal: spacing.gutter,
     borderRadius: 2,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: spacing.md,
   },
   studyBarFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
     borderRadius: 2,
   },
-
-  // Done
   doneWrap: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
   },
-  doneEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  doneTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 6,
-  },
-  doneSub: {
-    fontSize: 14,
-    color: COLORS.muted,
-    marginBottom: 32,
-  },
-  doneStats: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 36,
-  },
   statBox: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 18,
-    borderRadius: 14,
+    borderRadius: radius.xl,
     borderWidth: 1,
-  },
-  statBoxGreen: {
-    backgroundColor: 'rgba(52,211,153,0.08)',
-    borderColor:     'rgba(52,211,153,0.25)',
-  },
-  statBoxRed: {
-    backgroundColor: 'rgba(248,113,113,0.08)',
-    borderColor:     'rgba(248,113,113,0.25)',
-  },
-  statNum: {
-    fontSize: 32,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.muted,
-    fontWeight: '600',
   },
   primaryBtn: {
     width: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.xl,
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  primaryBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0C0B1F',
+    marginBottom: spacing.xl,
   },
   secondaryBtn: {
     width: '100%',
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  secondaryBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.muted,
   },
 });

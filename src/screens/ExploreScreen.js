@@ -1,17 +1,16 @@
-import { Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../utils/ThemeContext';
+import { type, spacing } from '../tokens/verbyte.tokens';
 
-export default function Screen() {
+export default function ExploreScreen() {
+  const { c } = useTheme();
+
   return (
-    <SafeAreaView style={s.container}>
-      <Text style={s.title}></Text>
-      <Text style={s.sub}>Yakinda buraya tasinacak</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 48, marginBottom: spacing.xl }}>🧭</Text>
+      <Text style={[type.h2, { color: c.text, marginBottom: spacing.md }]}>Keşif</Text>
+      <Text style={[type.body, { color: c.textMuted }]}>Yakında burada daha fazlası...</Text>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0C0B1F', alignItems: 'center', justifyContent: 'center' },
-  title:     { fontSize: 28, fontWeight: '800', color: '#818CF8' },
-  sub:       { fontSize: 14, color: '#555', marginTop: 8 },
-});
